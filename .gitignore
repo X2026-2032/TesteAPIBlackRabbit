@@ -1,0 +1,10 @@
+node_modules
+build
+.env
+coverage
+
+*.txt
+banking-key.pem
+remote.sh
+
+yarn*

@@ -1,0 +1,3 @@
+GET /dashboard/custom-extract?end_date=2023-07-14&start_date=2023-09-13
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiR1JBUEhJQyIsInR5cGUiOiJHUkFQSElDIiwic3ViIjoiYzE2NmM2OTgtNDNlMS00NjQ3LWJlNjUtZmNiYjIxNTQ0MWE0IiwiaWF0IjoxNjk0NjI5Njg3LCJleHAiOjE2OTcyMjE2ODd9.x51l1Qlr3bhkIlH303B4QQrLEXUz1T0FQtN8N9Bq-zg

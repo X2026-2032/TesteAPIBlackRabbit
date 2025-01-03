@@ -1,0 +1,21 @@
+POST /phone-recharges
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiR1JBUEhJQyIsInN1YiI6IjU5MmJiYmMwLTAwYzctNDc0My04YjU2LTRlNWJjM2Q5MTk4ZiIsImlhdCI6MTY5MTYwMzA2NCwiZXhwIjoxNjk0MTk1MDY0fQ.HqrlC8RGnvqxe3l8XT4UUtuqNRNJpOYJlR5zkDw_7TA
+Content-Type: application/json
+
+{
+    "dealer_code": "001",
+    "area_code": "31",
+    "phone_number": "989292700"
+}
+###
+POST /phone-recharges/a21dafad-bb4f-496a-a455-18a5f9096a5d/confirm
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiR1JBUEhJQyIsInN1YiI6IjU5MmJiYmMwLTAwYzctNDc0My04YjU2LTRlNWJjM2Q5MTk4ZiIsImlhdCI6MTY5MTYwMzA2NCwiZXhwIjoxNjk0MTk1MDY0fQ.HqrlC8RGnvqxe3l8XT4UUtuqNRNJpOYJlR5zkDw_7TA
+Content-Type: application/json
+
+{
+    "amount": 12,
+    "rechargeId": "99dbaae9-7ac7-4c99-9d8d-d614e756b34b",
+    "pin":"000"
+}

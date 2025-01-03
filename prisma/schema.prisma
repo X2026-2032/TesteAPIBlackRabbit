@@ -1,0 +1,875 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+  binaryTargets   = ["linux-musl-openssl-3.0.x", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "windows", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                        String                      @id @default(uuid())
+  name                      String
+  document                  String                      @unique
+  email                     String                      @unique
+  role                      Role                        @default(MEMBER)
+  status                    String
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @updatedAt
+  access_token              String?
+  refId                     String?
+  type                      Type                        @default(INDIVIDUAL)
+  company_type              String?
+  password                  String?
+  config_key_pix            String?
+  phone                     Json
+  monthly_invoicing         Float?
+  api_key                   String?
+  bank_account_id           String?
+  hash_reset_password       String?
+  planId                    String?
+  Account                   Account[]
+  AccountUsers              AccountUsers?
+  Address                   Address[]
+  AuthToken                 AuthToken[]
+  FeeLimitChangeRequest     FeeLimitChangeRequest[]
+  FeeLimits                 FeeLimits[]
+  GraphicAccountTransaction GraphicAccountTransaction[]
+  GraphicAccount            GraphicAccount[]
+  Partner                   Partner[]
+  PasswordReset             PasswordReset[]
+  Pictures                  Pictures[]
+  DeviceToken               DeviceToken[]
+  UserDevice                UserDevice[]
+
+  @@map("users")
+}
+
+model Address {
+  id           String   @id @default(uuid())
+  number       String?
+  neighborhood String
+  state        String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  user_id      String?
+  cityId       Int?
+  cityName     String?
+  complement   String?
+  isConfirmed  Boolean  @default(true)
+  publicPlace  String
+  type         String
+  zipCode      String
+  graphicId    String?
+  user         User?    @relation(fields: [user_id], references: [id])
+
+  @@map("addresses")
+}
+
+model Account {
+  id                 String               @id @default(uuid())
+  status             String?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @updatedAt
+  user_id            String
+  account_digit      String?
+  account_number     String?
+  alias_status       String?
+  branch_number      String?
+  refId              String
+  balance            Float?
+  franchise_id       String?
+  pin                String?
+  security_eletronic String?
+  gestor_graphic     Boolean              @default(false)
+  api_key            String?
+  code_bank          String?              @default("0435")
+  counter            Int                  @default(0)
+  blocked            Boolean              @default(false)
+  ReportBalance      ReportBalance[]
+  user               User                 @relation(fields: [user_id], references: [id])
+  AccountToken       AccountToken?
+  AccountTransaction AccountTransaction[]
+  AccountUsers       AccountUsers[]
+  BankTransfer       BankTransfer[]
+  Card               Card[]
+  DailyFinalBalances DailyFinalBalance[]
+  GraphicAccount     GraphicAccount[]
+  Notifications      Notifications[]
+  phoneRecharge      PhoneRecharge[]
+
+  @@map("accounts")
+}
+
+model GraphicAccount {
+  id                         String                      @id @default(uuid())
+  name                       String
+  document                   String                      @unique
+  email                      String?                     @unique
+  password_hash              String
+  balance                    Float                       @default(0)
+  status                     String
+  created_at                 DateTime                    @default(now())
+  updated_at                 DateTime                    @updatedAt
+  user_id                    String
+  account_id                 String
+  number_identifier          String?
+  virtual_account_id         String?
+  access_token               String?
+  pin                        String?
+  security_eletronic         String?
+  status_pin_eletronic       Boolean                     @default(false)
+  blocked                    Boolean                     @default(false)
+  counter                    Int                         @default(0)
+  gender                     String?
+  id_master_user             String?
+  status_master_user         Boolean                     @default(false)
+  birthDate                  String?
+  franchise_id               String?
+  document_base64_front      String?
+  document_base64_selfie     String?
+  document_base64_verse      String?
+  role                       Role                        @default(WALLET)
+  pin_wallet                 String?
+  bank_account_id            String?
+  rg_cnh                     String?
+  planId                     String?
+  hash_reset_password        String?
+  phone                      Json?
+  terms                      Json?
+  educationLevel             String?
+  maritalStatus              String?
+  monthlyInvoicing           String?
+  activityCnae               String?
+  amountMonthlyInvoicing     Float?
+  amountPatrimony            Float?
+  amountShareCapital         Float?
+  corporateName              String?
+  fantasyName                String?
+  isPoliticallyExposedPerson Boolean?
+  openingDate                String?
+  userType                   String?
+  ReportBalance              ReportBalance[]
+  AuthToken                  AuthToken[]
+  DailyFinalBalances         DailyFinalBalance[]
+  feeLimitChangeRequests     FeeLimitChangeRequest[]
+  feeLimits                  FeeLimits?
+  GraphicAccountTransaction  GraphicAccountTransaction[]
+  account                    Account                     @relation(fields: [account_id], references: [id])
+  user                       User                        @relation(fields: [user_id], references: [id])
+  GraphicTransactionByTxId   GraphicTransactionByTxId[]
+  Notifications              Notifications[]
+  pagBankMachine             PagBankCardMachine[]
+  Pictures                   Pictures[]
+  DeviceToken                DeviceToken[]
+  UserDevice                 UserDevice[]
+
+  @@map("graphic_accounts")
+}
+
+model GraphicAccountTransaction {
+  id                    String          @id @default(uuid())
+  payer_document        String?
+  payer_bank_name       String?
+  payer_bank_account    String?
+  transaction_id        String?
+  type                  String
+  data                  Json
+  response              Json?
+  status                String          @default("waiting")
+  created_at            DateTime        @default(now())
+  updated_at            DateTime        @updatedAt
+  graphic_account_id    String?
+  amount                Float
+  description           String?
+  direction             String
+  user_id               String?
+  user_id_graphic       String?
+  show_notification     Boolean         @default(false)
+  endToEndPix           String?
+  correlationId         String?
+  newValue              Float           @default(0)
+  nsu                   Int?            @unique
+  end_to_end_id         String?
+  idempotency_id        String?
+  order_id              String?
+  previousValue         Float           @default(0)
+  number_of_transaction Int?            @default(autoincrement())
+  ReportBalance         ReportBalance[]
+  GraphicAccount        GraphicAccount? @relation(fields: [graphic_account_id], references: [id])
+  user                  User?           @relation(fields: [user_id], references: [id])
+
+  @@map("graphic_account_transactions")
+}
+
+model AccountTransaction {
+  id                    String          @id @default(uuid())
+  payer_bank_name       String?
+  payer_bank_account    String?
+  payer_document        String?
+  transaction_id        String?
+  type                  String
+  data                  Json?
+  response              Json?
+  status                String          @default("waiting")
+  direction             String
+  amount                Float
+  description           String?
+  created_at            DateTime        @default(now())
+  updated_at            DateTime        @updatedAt
+  account_id            String
+  show_notification     Boolean         @default(false)
+  correlation_id        String          @default("")
+  apiKey                String?
+  beneficiary           Json?
+  newValue              Float           @default(0)
+  nsu                   Int?            @unique
+  end_to_end_id         String?
+  idempotency_id        String?
+  order_id              String?
+  previousValue         Float           @default(0)
+  scheduled             Boolean         @default(false)
+  scheduled_at          DateTime?
+  number_of_transaction Int?
+  ReportBalance         ReportBalance[]
+  Account               Account         @relation(fields: [account_id], references: [id])
+
+  @@map("accounts_transactions")
+}
+
+model AccountUsers {
+  user_id    String  @unique
+  account_id String
+  Account    Account @relation(fields: [account_id], references: [id])
+  User       User    @relation(fields: [user_id], references: [id])
+
+  @@map("accounts_users")
+}
+
+model AccountToken {
+  access_token String
+  account_id   String  @unique
+  id           String? @default(uuid())
+  Account      Account @relation(fields: [account_id], references: [id])
+
+  @@map("accounts_token")
+}
+
+model Partner {
+  id          String   @id @default(uuid())
+  partnerId   String
+  document    String
+  name        String
+  mother_name String
+  birth_date  String
+  address_id  String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id])
+
+  @@map("partners")
+}
+
+model Upbrand {
+  id         String   @id @default(uuid())
+  data       Json
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("upbrand")
+}
+
+model DepositBankSlip {
+  id          String   @id @default(uuid())
+  type        String
+  due_date    String
+  amount      Int
+  creatadedAt DateTime @default(now())
+  uptadedAt   DateTime @default(now())
+
+  @@map("deposit_bank_slip")
+}
+
+model BankSlip {
+  id                    String     @id @default(uuid())
+  type                  String     @default("charge")
+  charge_type           ChargeType
+  due_date              DateTime   @default(now())
+  amount                Int
+  instructions          String
+  barcode               String?
+  digitable_line        String?
+  reference_id          String?
+  created_at            DateTime   @default(now())
+  qrcode64              String?
+  correlationId         String?
+  data                  Json       @default("{}")
+  installment_number    Int?       @default(1)
+  quantity_installments Int?
+  recurrence            Boolean    @default(false)
+  reference_id_tx       String?    @default(uuid())
+  response              Json?
+  status                String     @default("Pending")
+
+  @@map("bank_slip")
+}
+
+model PhoneRecharge {
+  id           String     @id @default(uuid())
+  status       String?
+  area_code    String
+  phone_number String
+  updated_at   DateTime   @updatedAt
+  created_at   DateTime   @default(now())
+  account_id   String?
+  dealer_code  DealerCode
+  reference_id String?
+  amount       Int?
+  account      Account?   @relation(fields: [account_id], references: [id])
+
+  @@map("phone_recharges")
+}
+
+model Card {
+  id                      String   @id @default(uuid())
+  updated_at              DateTime @updatedAt
+  created_at              DateTime @default(now())
+  account_id              String?
+  tracking_code           String?
+  type                    CardType
+  status                  String?
+  holder                  String?
+  issuer                  String?
+  number                  String?
+  sub_status              String?
+  expiration_date         String?
+  estimated_delivery_date String?
+  issued_at               String?
+  printed_at              String?
+  expedited_at            String?
+  delivered_at            String?
+  limit_amount            String?
+  limit_expires_at        String?
+  limit_balance           String?
+  bucket_id               String?
+  tracking_url            String?
+  reference_id            String?
+  is_noname               Boolean?
+  account                 Account? @relation(fields: [account_id], references: [id])
+
+  @@map("cards")
+}
+
+model BankTransfer {
+  id                    String   @id @default(uuid())
+  amount                Float
+  beneficiary_name      String?
+  description           String?
+  meta                  String?
+  direction             String
+  created_at            DateTime @default(now())
+  updated_at            DateTime @default(now())
+  account_id            String
+  cr_transaction_id     String
+  status                String?
+  bank_account_bank     String?
+  bank_account_branch   String?
+  bank_account_digit    String?
+  bank_account_document String?
+  bank_account_name     String?
+  bank_account_number   String?
+  account               Account  @relation(fields: [account_id], references: [id])
+
+  @@map("bank_transfer")
+}
+
+model PasswordReset {
+  id           String    @id @default(uuid())
+  userId       String
+  reference_id String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now())
+  status       String?   @default("pending")
+  operatosId   String?
+  Operatos     Operatos? @relation(fields: [operatosId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@map("password_reset")
+}
+
+model GraphicTransactionByTxId {
+  id               String         @id @default(uuid())
+  transaction_idtx String?
+  id_user_graphic  String
+  my_graphic_id    String
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  user_id          String
+  GraphicAccount   GraphicAccount @relation(fields: [user_id], references: [id])
+
+  @@map("graphic_idtx_transactions")
+}
+
+model QrCode {
+  id                 String  @id @default(uuid())
+  userId             String
+  payload            Json
+  virtual_account_id String?
+  idempotency_id     String?
+  response_tx_id     String?
+  status             String?
+  type               String?
+
+  @@map("id_tx_transactions_qrcode")
+}
+
+model taxAmountIn {
+  id     String @id @default(uuid()) @db.Uuid
+  status String @default("waiting")
+  amount Float
+  userId String
+
+  @@map("tx_amount_in")
+}
+
+model TaxConfiguration {
+  id             String  @id @default(uuid())
+  name           String  @unique
+  tax            Float?  @default(0)
+  taxDefault     Float?  @default(0)
+  taxDefaultType String? @default("NUMBER")
+  taxType        String? @default("NUMBER")
+
+  @@map("tax_configuration")
+}
+
+model Plans {
+  id               String         @id @default(uuid())
+  name             String         @unique
+  description      String?
+  price            Float
+  subscribersIds   String[]
+  avaliableToRoles String[]
+  active           Boolean        @default(true)
+  SubscriptionPlan Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id         String             @id @default(uuid())
+  userId     String             @unique
+  planId     String
+  status     SubscriptionStatus @default(ACTIVE)
+  recurrence Int                @default(30)
+  created_at DateTime           @default(now())
+  updated_at DateTime           @default(now())
+  Invoice    Invoice[]
+  plan       Plans              @relation(fields: [planId], references: [id])
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  description    String?
+  subscriptionId String
+  price          Float
+  status         InvoiceStatus @default(OPEN)
+  closeIn        DateTime
+  dueIn          DateTime
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @default(now())
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+}
+
+model PagBankCardMachine {
+  id                 String               @id @default(uuid())
+  serialNum          String               @unique
+  identificationCode String               @unique
+  description        String?
+  graphic_account_id String?
+  machinePlanId      String
+  graphicAccount     GraphicAccount?      @relation(fields: [graphic_account_id], references: [id])
+  plan               PagPlans             @relation(fields: [machinePlanId], references: [id])
+  PagBankTransaction PagBankTransaction[]
+
+  @@map("pag_bank_card_machine")
+}
+
+model PagPlans {
+  id                 String                @id @default(uuid())
+  name               String                @unique
+  PagBankCardMachine PagBankCardMachine[]
+  taxes              TaxConfigurationPOS[]
+
+  @@map("pag_plans")
+}
+
+model TaxConfigurationPOS {
+  id           String    @id @default(uuid())
+  name         String    @default("1x")
+  tax          Float?    @default(0)
+  installments Int       @default(0)
+  pagPlansId   String?
+  pagPlan      PagPlans? @relation(fields: [pagPlansId], references: [id])
+
+  @@map("tax_configuration_pos")
+}
+
+model PagBankTransaction {
+  id                   String              @id @default(uuid())
+  transactionId        String              @unique
+  machineSerial        String              @default("")
+  type                 String
+  status               Int                 @default(1)
+  grossAmount          Float               @default(0)
+  netAmount            Float               @default(0)
+  taxTotal             Float               @default(0)
+  isAwaitingTransfer   Boolean             @default(true)
+  installments         Int                 @default(0)
+  machineId            String?
+  notificationResponse Json?
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @default(now())
+  machine              PagBankCardMachine? @relation(fields: [machineId], references: [id])
+
+  @@map("pag_bank_transactions")
+}
+
+model PixFavorites {
+  id          String   @id @default(uuid())
+  userId      String
+  contactName String
+  keyPix      String
+  keyType     String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("pix_favorites")
+}
+
+model FeeLimits {
+  id                            String                  @id @default(uuid())
+  graphic_account_id            String?                 @unique
+  userId                        String?
+  feePixIn                      Float                   @default(10000000000)
+  feePixOut                     Float                   @default(5000)
+  feeTedOut                     Float                   @default(5000)
+  feeP2pIn                      Float                   @default(10000000000)
+  feeP2pOut                     Float                   @default(5000)
+  feeBillet                     Float                   @default(5000)
+  limitDay                      Float                   @default(5000)
+  limitNightly                  Float                   @default(5000)
+  limitMonth                    Float                   @default(50000)
+  availableFeePixIn             Float                   @default(10000000000)
+  availableFeePixOut            Float                   @default(5000)
+  availableFeeTedOut            Float                   @default(5000)
+  availableFeeP2pIn             Float                   @default(10000000000)
+  availableFeeP2pOut            Float                   @default(5000)
+  availableFeeBillet            Float                   @default(5000)
+  availableLimitDay             Float                   @default(5000)
+  availableLimitNightly         Float                   @default(1000)
+  availableLimitMonth           Float                   @default(50000)
+  createdAt                     DateTime                @default(now())
+  updatedAt                     DateTime                @updatedAt
+  limitBilletDay                Float                   @default(1000)
+  limitBilletDayTransaction     Float                   @default(1000)
+  limitBilletNightly            Float                   @default(1000)
+  limitBilletNightlyTransaction Float                   @default(1000)
+  limitPixDay                   Float                   @default(5000)
+  limitPixDayTransaction        Float                   @default(5000)
+  limitPixNightly               Float                   @default(1000)
+  limitPixNightlyTransaction    Float                   @default(1000)
+  type                          String?
+  FeeLimitChangeRequests        FeeLimitChangeRequest[]
+  GraphicAccount                GraphicAccount?         @relation(fields: [graphic_account_id], references: [id])
+  User                          User?                   @relation(fields: [userId], references: [id])
+
+  @@map("fee_limits")
+}
+
+model FeeLimitChangeRequest {
+  id                 String          @id @default(uuid())
+  graphicAccountId   String?
+  userId             String?
+  feePixIn           Float           @default(10000000000)
+  feePixOut          Float           @default(5000)
+  feeTedOut          Float           @default(5000)
+  feeP2pIn           Float           @default(10000000000)
+  feeP2pOut          Float           @default(5000)
+  feeBillet          Float           @default(5000)
+  limitDay           Float           @default(50000)
+  limitNightly       Float           @default(5000)
+  limitMonth         Float           @default(5000)
+  status             String          @default("waiting")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  feeLimitsId        String?
+  limitBilletDay     Float           @default(5000)
+  limitBilletNightly Float           @default(5000)
+  FeeLimits          FeeLimits?      @relation(fields: [feeLimitsId], references: [id])
+  GraphicAccount     GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
+  User               User?           @relation(fields: [userId], references: [id])
+
+  @@map("fee_limit_change_request")
+}
+
+model Operatos {
+  id            String          @id @default(uuid())
+  name          String
+  document      String?         @unique
+  email         String          @unique
+  password      String?
+  phone         Json?
+  role          Role            @default(OPERATOR)
+  status        String
+  access_token  String?
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  birthDate     DateTime?
+  gender        String?
+  type          Type            @default(OPERATOR)
+  PasswordReset PasswordReset[]
+
+  @@map("operators")
+}
+
+model Pictures {
+  id                 String          @id @default(uuid())
+  url                String?
+  user_id            String?
+  graphic_account_id String?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  GraphicAccount     GraphicAccount? @relation(fields: [graphic_account_id], references: [id])
+  User               User?           @relation(fields: [user_id], references: [id])
+
+  @@map("pictures")
+}
+
+model DailyFinalBalance {
+  id               String          @id @default(uuid())
+  dailyBalances    Json            @default("[]")
+  created_at       DateTime        @default(now())
+  accountId        String?
+  graphicAccountId String?
+  Account          Account?        @relation(fields: [accountId], references: [id])
+  GraphicAccount   GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
+
+  @@map("daily_final_balances")
+}
+
+model Notifications {
+  id               String          @id @default(uuid())
+  accountId        String?
+  graphicAccountId String?
+  schema           String?
+  idSchema         String?
+  path             String?
+  title            String?
+  message          String?
+  icon             String?
+  isRead           Boolean         @default(false)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+  deleted_at       DateTime?
+  Account          Account?        @relation(fields: [accountId], references: [id])
+  GraphicAccount   GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
+
+  @@map("notifications")
+}
+
+model AuthToken {
+  id                 String          @id @default(uuid())
+  token              String
+  user_id            String?
+  graphic_account_id String?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  GraphicAccount     GraphicAccount? @relation(fields: [graphic_account_id], references: [id])
+  User               User?           @relation(fields: [user_id], references: [id])
+
+  @@map("authToken")
+}
+
+model VerifyAuth {
+  id         String   @id @default(uuid())
+  data       Json
+  status     String   @default("pending")
+  rg_cnh     String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("verifyAuth")
+}
+
+model Ticket {
+  id          String       @id @default(uuid())
+  number      Int          @unique @default(autoincrement())
+  title       String
+  description String
+  status      TicketStatus @default(WAITING)
+  origem      String
+  type        String
+  category    String
+  applicant   String
+  assigned    String?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  attachments Attachment[]
+  messages    Message[]
+
+  @@map("tickets")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  ticketId   String
+  author     String
+  content    String
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+  ticket     Ticket   @relation(fields: [ticketId], references: [id])
+
+  @@map("messages")
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  ticketId    String
+  filename    String
+  contentType String
+  data        Bytes
+  created_at  DateTime @default(now())
+  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+
+  @@map("attachments")
+}
+
+model ReportBalance {
+  id                     String                     @id @default(uuid())
+  amount                 Float
+  description            String?
+  account_id             String?
+  graphic_account_id     String?
+  account_transaction_id String?
+  graphic_transaction_id String?
+  created_at             DateTime                   @default(now())
+  account                Account?                   @relation(fields: [account_id], references: [id])
+  account_transaction    AccountTransaction?        @relation(fields: [account_transaction_id], references: [id])
+  grphic_account         GraphicAccount?            @relation(fields: [graphic_account_id], references: [id])
+  graphic_transaction    GraphicAccountTransaction? @relation(fields: [graphic_transaction_id], references: [id])
+}
+
+model UserDevice {
+  id         String   @id @default(uuid())
+  user_id    String?
+  graphic_id String?
+  device     String
+  allowed    Boolean
+  isDeleted  Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  User           User?           @relation(fields: [user_id], references: [id])
+  GraphicAccount GraphicAccount? @relation(fields: [graphic_id], references: [id])
+}
+
+model DeviceToken {
+  id         String   @id @default(uuid())
+  user_id    String?
+  graphic_id String?
+  token      String
+  device     String
+  valid      Boolean
+  attempts   Int      @default(0)
+  created_at DateTime @default(now())
+
+  User           User?           @relation(fields: [user_id], references: [id])
+  GraphicAccount GraphicAccount? @relation(fields: [graphic_id], references: [id])
+}
+
+enum Role {
+  ADMIN
+  ADMIN_BAG
+  MEMBER
+  WALLET
+  GRAPHIC
+  MASTER
+  OPERATOR
+}
+
+enum TypeRolePlans {
+  MEMBERPJ
+  MEMBERPF
+  WALLET
+  GRAPHIC
+}
+
+enum Type {
+  NATURAL
+  LEGAL
+  INDIVIDUAL
+  COMPANIE
+  OPERATOR
+}
+
+enum ChargeType {
+  BANKSLIP
+  BANKSLIP_PIX
+}
+
+enum TypeSlip {
+  CHARGE
+  DEPOSIT
+}
+
+enum LimitDate {
+  D30
+  D60
+  D90
+}
+
+enum TaxKind {
+  FINE
+  INTEREST
+  DISCOUNT
+}
+
+enum TaxType {
+  PERCENTUAL
+  FIXED_AMOUNT
+  UNTIL_DATE
+}
+
+enum DealerCode {
+  VIVO_01
+  CLARO_02
+  OI_03
+  TIM_04
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+}
+
+enum InvoiceStatus {
+  OPEN
+  CLOSE
+  DUE
+  PAID
+}
+
+enum CardType {
+  VIRTUAL
+  PHYSICAL
+}
+
+enum TicketStatus {
+  WAITING
+  OPEN
+  CLOSE
+}

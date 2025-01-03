@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "Type" AS ENUM ('NATURAL', 'LEGAL', 'INDIVIDUAL', 'COMPANIE');
+
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN     "refId" TEXT,
+ADD COLUMN     "type" "Type" NOT NULL DEFAULT 'INDIVIDUAL';

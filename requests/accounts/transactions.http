@@ -1,0 +1,4 @@
+GET /transactions/e5635dab-748d-4238-a5e1-d93f7183fd36/all
+Host: api.rubibank.com.br
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiR1JBUEhJQyIsInN1YiI6IjU5MmJiYmMwLTAwYzctNDc0My04YjU2LTRlNWJjM2Q5MTk4ZiIsImlhdCI6MTY5MTYwMzA2NCwiZXhwIjoxNjk0MTk1MDY0fQ.HqrlC8RGnvqxe3l8XT4UUtuqNRNJpOYJlR5zkDw_7TA
+

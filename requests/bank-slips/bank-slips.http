@@ -1,0 +1,41 @@
+GET /bank-slips/all-slips
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiTUVNQkVSIiwic3ViIjoiZjRjMGFiMDAtNmE5Zi00MTQ1LTlhM2YtMjQ5MzY2Y2U5MTQzIiwiaWF0IjoxNjkyMTk4NzQxLCJleHAiOjE2OTQ3OTA3NDF9.xfaakkaVS3ab8ZLG6kra2aoiSmTwWOxUAgu03ci8n8o
+ 
+###
+POST /bank-slips
+Host: localhost:3333
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiTUVNQkVSIiwidHlwZSI6IkNPTVBBTklFIiwic3ViIjoiNGJiMGJjMjItNTU1Ni00ZWM2LTk3YTYtODExZDc0YzQ2MmNiIiwiaWF0IjoxNjk0NTQzOTQyLCJleHAiOjE2OTcxMzU5NDJ9.U_WXk71xT_3zoykStu6IBKBpG_1gmNXC1S3U6c9aq0I
+
+
+{
+	"type": "charge",
+	"charge_type": "service",
+	"due_date": "2023-09-15",
+	"limit_date": 60,
+	"amount": 20,
+	"instructions": "boleto teste",
+	"payer": {
+		"name": "Mauro Luiz Zani Filho",
+		"document": "02052195009",
+		"address": {
+			"street": "Avenida Décima Primeira Avenida ",
+			"number": "771",
+			"neighborhood": "Setor Leste Vila Nova ",
+			"city": "Goiânia",
+			"state": "GO",
+			"postal_code": "74640040",
+			"extra": "casa 13"
+		}
+	}
+}
+
+###
+GET https://rubi-bank-api-ogtya.ondigitalocean.app/bank-transfers/by/accounts/9949f1c3-5c58-4290-95b5-b7cbfe5ec81a
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJ0eXBlIjpudWxsLCJzdWIiOiJmOTc2MmQ0Mi1kY2FhLTQ3NTQtOWQ3MS00MzgzYTdlYzIzNjQiLCJpYXQiOjE2OTIwMjcyNjMsImV4cCI6MTY5NDYxOTI2M30.iwmxBbUBZwGSgGltJtoryKnJWsRBuAehSIxiWnEMvZM
+
+###
+GET /bank-slips/99e38855-39cf-49ac-9beb-400213818670/pdf
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiTUVNQkVSIiwidHlwZSI6Ik9FS1ZqaUJjVk5LZ3lvYlhRQjVJRklOMlB6aTFadzdadlhpeGtVb3VpM1RmSXpqZ1BSRzM0aU4yemhrcVhiYzZ5WFhDeE9oWERnR2JYd1VDIiwic3ViIjoiZWRmZTc4ODMtNDMyNS00MTY5LTkyNDMtMmU5YzEzNjY4MTNjIiwiaWF0IjoxNjkyMDY1ODQ2LCJleHAiOjE2OTQ2NTc4NDZ9.wHb1MFdJf--ajn5qKAdifEmUxbgM23cGzBlgZrUA4cs

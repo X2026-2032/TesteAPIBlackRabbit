@@ -1,0 +1,298 @@
+POST /webhook
+Host: localhost:3333
+Content-Type: application/json
+
+{
+    "type": "pix.received",
+    "data": {
+        "id": "9a226362-3fc5-474b-a233-1ca714a9dca8",
+        "account_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+        "payer_payee_id": "99f8278c-eadb-4b3c-8ddb-cfabdbbf3d16",
+        "method": "key",
+        "status": "executed",
+        "amount": "1.3",
+        "description": null,
+        "meta": null,
+        "created_at": "2023-09-14 17:54:29",
+        "updated_at": "2023-09-14 17:54:29",
+        "direction": "in",
+        "id_tx": null,
+        "refunded_amount": "0",
+        "user_id": null,
+        "reason": null,
+        "bucket_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+        "payer_payee": {
+            "id": "99f8278c-eadb-4b3c-8ddb-cfabdbbf3d16",
+            "key": null,
+            "created_at": "2023-08-24 18:02:24",
+            "updated_at": "2023-08-24 18:02:24",
+            "bank_account_id": "99f8278c-d6f4-4f01-ae94-f6b0c5837105",
+            "bucket_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+            "bank_account": {
+                "id": "99f8278c-d6f4-4f01-ae94-f6b0c5837105",
+                "verified": false,
+                "bank": "341",
+                "branch": "5445",
+                "account_number": "17394",
+                "account_digit": "",
+                "document": "11582644616",
+                "created_at": "2023-08-24 18:02:24",
+                "updated_at": "2023-08-24 18:02:24",
+                "name": "MARCUS ANTONIO RIOS DOS SANTOS",
+                "type": "checking",
+                "holder_type": "person",
+                "bank_id": "e8a55cef-5c73-4141-a936-4de1d1924800",
+                "branch_digit": null,
+                "bank_name": "ITAÚ UNIBANCO S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "e8a55cef-5c73-4141-a936-4de1d1924800",
+                    "ispb": "60701190",
+                    "code": "341",
+                    "short_name": "ITAÚ UNIBANCO S.A.",
+                    "name": "ITAÚ UNIBANCO S.A.",
+                    "image": "https:\/\/idez-assets.s3.amazonaws.com\/bank_itau.svg",
+                    "created_at": "2023-02-10 10:52:06",
+                    "updated_at": "2023-09-10 00:00:35"
+                }
+            }
+        }
+    },
+    "conciliation_id": null
+}
+###
+POST /webhook
+Host: localhost:3333
+Content-Type: application/json
+
+{
+    "type": "pix.sent",
+    "data": {
+        "id": "99f8b704-b63a-401a-a8e8-7fb1d22aa7aa",
+        "account_id": "9987313e-806f-4f36-8ea6-aa50e3d426eb",
+        "payer_payee_id": "99f8b704-b4d9-4b80-a33c-adb6a22b6e0d",
+        "method": "key",
+        "status": "executed",
+        "amount": "71",
+        "description": null,
+        "meta": null,
+        "created_at": "2023-08-25 00:43:34",
+        "updated_at": "2023-08-25 01:00:19",
+        "direction": "out",
+        "id_tx": null,
+        "refunded_amount": "0",
+        "user_id": "9987313f-5270-4ba5-91e2-e0215e3d6f05",
+        "bucket_id": "9987313e-806f-4f36-8ea6-aa50e3d426eb",
+        "payer_payee": {
+            "id": "99f8b704-b4d9-4b80-a33c-adb6a22b6e0d",
+            "key": "+5531989292700",
+            "created_at": "2023-08-25 00:43:34",
+            "updated_at": "2023-08-25 00:43:34",
+            "bank_account_id": "99f8b704-b007-4b2a-b6bc-136b7f0d68da",
+            "bucket_id": "9987313e-806f-4f36-8ea6-aa50e3d426eb",
+            "bank_account": {
+                "id": "99f8b704-b007-4b2a-b6bc-136b7f0d68da",
+                "verified": false,
+                "bank": "301",
+                "branch": "0001",
+                "account_number": "17564592",
+                "account_digit": "",
+                "document": "52653617000100",
+                "created_at": "2023-08-25 00:43:34",
+                "updated_at": "2023-08-25 00:43:34",
+                "name": "Marcus Tecnologia LTDA",
+                "type": "payments",
+                "holder_type": "company",
+                "bank_id": "f143b859-f0ec-43f1-a4cb-77785cca5393",
+                "branch_digit": null,
+                "bank_name": "DOCK IP S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "f143b859-f0ec-43f1-a4cb-77785cca5393",
+                    "ispb": "13370835",
+                    "code": "301",
+                    "short_name": "DOCK IP S.A.",
+                    "name": "DOCK INSTITUIÇÃO DE PAGAMENTO S.A.",
+                    "image": null,
+                    "created_at": "2023-01-22 00:00:20",
+                    "updated_at": "2023-08-20 00:00:22"
+                }
+            }
+        }
+    },
+    "conciliation_id": null
+}
+
+###
+POST /webhook
+Host: localhost:3333
+Content-Type: application/json
+
+{
+    "type": "pix.received",
+    "data": {
+        "id": "9a043501-022f-4cd1-81b3-e808e1e8ac10",
+        "account_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+        "payer_payee_id": "99f8278c-eadb-4b3c-8ddb-cfabdbbf3d16",
+        "method": "key",
+        "status": "executed",
+        "amount": "5",
+        "description": null,
+        "meta": null,
+        "created_at": "2023-08-30 17:49:58",
+        "updated_at": "2023-08-30 17:49:58",
+        "direction": "in",
+        "id_tx": null,
+        "refunded_amount": "0",
+        "user_id": null,
+        "bucket_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+        "payer_payee": {
+            "id": "99f8278c-eadb-4b3c-8ddb-cfabdbbf3d16",
+            "key": null,
+            "created_at": "2023-08-24 18:02:24",
+            "updated_at": "2023-08-24 18:02:24",
+            "bank_account_id": "99f8278c-d6f4-4f01-ae94-f6b0c5837105",
+            "bucket_id": "37b197cc-d65e-42e7-ae84-05c9de38a8c9",
+            "bank_account": {
+                "id": "99f8278c-d6f4-4f01-ae94-f6b0c5837105",
+                "verified": false,
+                "bank": "341",
+                "branch": "5445",
+                "account_number": "17394",
+                "account_digit": "",
+                "document": "11582644616",
+                "created_at": "2023-08-24 18:02:24",
+                "updated_at": "2023-08-24 18:02:24",
+                "name": "MARCUS ANTONIO RIOS DOS SANTOS",
+                "type": "checking",
+                "holder_type": "person",
+                "bank_id": "e8a55cef-5c73-4141-a936-4de1d1924800",
+                "branch_digit": null,
+                "bank_name": "ITAÚ UNIBANCO S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "e8a55cef-5c73-4141-a936-4de1d1924800",
+                    "ispb": "60701190",
+                    "code": "341",
+                    "short_name": "ITAÚ UNIBANCO S.A.",
+                    "name": "ITAÚ UNIBANCO S.A.",
+                    "image": "https:\/\/idez-assets.s3.amazonaws.com\/bank_itau.svg",
+                    "created_at": "2023-02-10 10:52:06",
+                    "updated_at": "2023-08-27 00:00:35"
+                }
+            }
+        }
+    },
+    "conciliation_id": null
+}
+
+
+###
+POST /webhook
+Host: localhost:3333
+Content-Type:  application/json
+
+{
+    "type": "bank_transfer.received",
+    "data": {
+        "direction": "in",
+        "account_id": "999df107-955c-4b03-a2be-583747c9a4c2",
+        "status": "completed",
+        "amount": 20000,
+        "beneficiary_name": "JMRV PATRIMONIAL LTDA ME - ME",
+        "description": "Operação Efetivada com Sucesso.",
+        "id": "9a03baf2-3e33-4f00-b977-47b2b80f29b8",
+        "updated_at": "2023-08-30 12:08:40",
+        "created_at": "2023-08-30 12:08:40",
+        "beneficiary": {
+            "id": "9a03baf2-3325-4ac5-9d7b-93abacfadf25",
+            "account_id": "999df107-955c-4b03-a2be-583747c9a4c2",
+            "holder_type": "App\\Models\\BankAccount",
+            "holder_id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+            "name": "JMRV PATRIMONIAL LTDA ME - ME",
+            "holder": {
+                "id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+                "verified": false,
+                "type": "checking",
+                "bank": "237",
+                "branch": "1883",
+                "bank_id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                "account_number": "178888",
+                "account_digit": "-",
+                "document": "09466599000128",
+                "bank_name": "BCO BRADESCO S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                    "ispb": "60746948",
+                    "code": "237",
+                    "short_name": "BCO BRADESCO S.A.",
+                    "name": "Banco Bradesco S.A.",
+                    "image": "https:\/\/idez-assets.s3.amazonaws.com\/bank_bradesco.svg",
+                    "created_at": "2023-02-10 10:52:06",
+                    "updated_at": "2023-08-27 00:00:35"
+                }
+            }
+        },
+        "bucket_id": "999df107-955c-4b03-a2be-583747c9a4c2",
+        "contact": {
+            "id": "9a03baf2-3325-4ac5-9d7b-93abacfadf25",
+            "beneficiary_type": "App\\Models\\BankAccount",
+            "beneficiary_id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+            "name": "JMRV PATRIMONIAL LTDA ME - ME",
+            "created_at": "2023-08-30 12:08:40",
+            "updated_at": "2023-08-30 12:08:40",
+            "document": null,
+            "laravel_through_key": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+            "beneficiary": {
+                "id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+                "verified": false,
+                "type": "checking",
+                "bank": "237",
+                "branch": "1883",
+                "bank_id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                "account_number": "178888",
+                "account_digit": "-",
+                "document": "09466599000128",
+                "bank_name": "BCO BRADESCO S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                    "ispb": "60746948",
+                    "code": "237",
+                    "short_name": "BCO BRADESCO S.A.",
+                    "name": "Banco Bradesco S.A.",
+                    "image": "https:\/\/idez-assets.s3.amazonaws.com\/bank_bradesco.svg",
+                    "created_at": "2023-02-10 10:52:06",
+                    "updated_at": "2023-08-27 00:00:35"
+                }
+            },
+            "holder_type": "App\\Models\\BankAccount",
+            "holder_id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+            "holder": {
+                "id": "9a03baf2-1216-49c7-af6c-b19768ec228f",
+                "verified": false,
+                "type": "checking",
+                "bank": "237",
+                "branch": "1883",
+                "bank_id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                "account_number": "178888",
+                "account_digit": "-",
+                "document": "09466599000128",
+                "bank_name": "BCO BRADESCO S.A.",
+                "is_savings_account": false,
+                "bank_detail": {
+                    "id": "bbbaf0f8-177d-4086-b811-1081c737e16f",
+                    "ispb": "60746948",
+                    "code": "237",
+                    "short_name": "BCO BRADESCO S.A.",
+                    "name": "Banco Bradesco S.A.",
+                    "image": "https:\/\/idez-assets.s3.amazonaws.com\/bank_bradesco.svg",
+                    "created_at": "2023-02-10 10:52:06",
+                    "updated_at": "2023-08-27 00:00:35"
+                }
+            }
+        }
+    },
+    "conciliation_id": null
+}

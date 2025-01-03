@@ -1,0 +1,20 @@
+GET /bank-transfers/by/accounts/66ea746e-ce58-4e9f-b4eb-c5d46ba1e2bc
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiQURNSU4iLCJ0eXBlIjpudWxsLCJzdWIiOiJmOTc2MmQ0Mi1kY2FhLTQ3NTQtOWQ3MS00MzgzYTdlYzIzNjQiLCJpYXQiOjE2OTIxMTcwNzYsImV4cCI6MTY5NDcwOTA3Nn0.6wa58zhtDkzzJrtM_5ml0YHTcMCYrnnZ8l0xq1U8p60
+
+
+POST /
+Host: localhost:3333
+
+{
+	"pin": "0000",
+	"amount": 10,
+	"bank_account": {
+		"name": "Marcus Antonio Rios Dos Santos",
+		"document": "11582644616",
+		"bank": "341",
+		"branch": "5445",
+		"account_number": "01739",
+		"account_digit": "4"
+	}
+}

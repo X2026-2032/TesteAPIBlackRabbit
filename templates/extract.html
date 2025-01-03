@@ -1,0 +1,55 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Receipt</title>
+  </head>
+  <body style="width: 720px" class="flex flex-col h-screen">
+    <div
+      style="
+        width: 100%;
+        height: 4rem;
+        display: flex;
+        padding: 0 1.25rem;
+        align-items: center;
+        background-color: #4299e1;
+      "
+    >
+      <span style="color: #fff; font-size: 1.5rem; font-weight: bold"> {TITLE} </span>
+    </div>
+    <div style="display: flex; width: 100%; justify-content: space-between; padding: 1.25rem">
+      <div>
+        <span style="color: #4a5568; font-size: 1.25rem; font-weight: bold"> {BENEFICIARY_NAME} </span>
+        <p style="color: #4299e1; font-size: 3.125rem; font-weight: bold">R$ {AMOUNT}</p>
+      </div>
+      <span style="font-weight: bold; font-size: 1.125rem">{DATE}</span>
+    </div>
+    <!-- Incluir o componente DefaultLabel diretamente no HTML -->
+    <div style="padding: 1.25rem">
+      <span style="color: #4a5568; font-size: 1.875rem; font-weight: bold">Pagador</span>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        Nome: <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{PAYER_NAME}</span>
+      </span>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        CPF: <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{PAYER_CPF}</span>
+      </span>
+    </div>
+    <div style="padding: 1.25rem">
+      <span style="color: #4a5568; font-size: 1.875rem; font-weight: bold">Favorecido</span>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        Nome: <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{BENEFICIARY_NAME}</span>
+      </span>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        CPF: <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{BENEFICIARY_DOCUMENT}</span>
+      </span>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        Instituição:
+        <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{BENEFICIARY_INSTITUTION}</span>
+      </span>
+      <div style=""></div>
+      <span style="color: #000; font-weight: bold; font-size: 1.25rem">
+        CPF: <span style="margin-left: 0.5rem; color: #4299e1; font-weight: bold">{BENEFICIARY_INSTITUTION}</span>
+      </span>
+    </div>
+  </body>
+</html>

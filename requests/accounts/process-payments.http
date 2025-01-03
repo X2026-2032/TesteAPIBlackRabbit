@@ -1,0 +1,8 @@
+POST /process-payments/batch-approved
+Host: localhost:3333
+Content-Type: application/json
+
+{
+    "data": ["592bbbc0-00c7-4743-8b56-4e5bc3d9198f"],
+    "password":""
+}

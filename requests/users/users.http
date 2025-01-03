@@ -1,0 +1,150 @@
+POST /sessions
+Host: localhost:3333
+Content-Type: application/json
+
+{
+      "document": "47076078023",
+      "password": "@T122331t"
+}
+###
+
+POST /users/individuals
+Host: localhost:3333
+Content-Type: application/json
+
+{
+  "name": "Marcus Tecnologia LTD",
+  "legal_name": "Marcus Tecnologia LTDA",
+  "legal_nature": "2135",
+  "email": "marcus@soganhei.com.br",
+  "establishment_date":"1992-02-20",
+  "establishment_type":"MEI",
+  "partners": [
+    {
+      "is_pep": false,
+      "name": "Fernando Afonso",
+      "document": "04818418498",
+      "phone": "31989292700",
+      "email": "william_testewebhooks@idez.com",
+      "birth_date": "1985-02-02",
+      "mother_name": "Maria de Fatima Gomes Melo",
+      "identity_type": "rg",
+      "identity_number": "162479540",
+      "identity_issued_at": "1992-08-20",
+      "mother_name": "Adrina Rios",
+      "address": {
+        "postal_code": "57072100",
+        "street": "Rua Aurora Leite Pessoa",
+        "number": "45",
+        "neighborhood": "Cidade",
+        "city": "Maceio",
+        "state": "AL",
+        "extra": ""
+      }
+    }
+  ],
+  "revenue": 1234,
+  "main_cnae":"7020400",
+  "password": "A123456",
+  "role": "ADMIN",
+  "is_pep": false,
+ // "is_foreign": false,
+  "document": "11724479008",
+  "birth_date": "1992-08-20",
+  "phone": "31989292700",
+  "profession_id": "1",
+  "identity_type": "rg",
+  "identity_number": "162479540",
+  "identity_issued_at": "1992-08-20",
+  "monthly_income": 5000,
+  "pin": "3214",
+  "address": {
+    "street": "Rua",
+    "number": "123",
+    "extra": "456",
+    "neighborhood": "Bairro",
+    "city": "Cidade",
+    "state": "GO",
+    "postal_code": "12345678"
+  },
+	"friend": "ana lima"
+}
+
+
+###
+
+GET  https://staging.idez.com.br/api/auth/tokens
+Authorization: Bearer p2JEZEbuwdesG7lqjI3mcZHiM77GvU1ORUW7Wbx8 
+
+
+###
+POST https://staging-ajiopay.idez.com.br/api/auth
+Content-Type: application/json
+
+{
+  "username": "02052195009",
+  "password": "@T122331t",
+  "device": "api"
+}
+
+
+###
+GET https://staging-ajiopay.idez.com.br/api/pix/transfers
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer 7i8RupPr1J47daHMmTWaQ95HNf3EfbwPTpMykCgcpo4fAYb4rouZ6XKXcDmyPMkqKmaVbGm9abmuRVgd 
+
+
+###
+POST https://staging.idez.com.br/api/webhooks/ping
+Content-Type: application/json
+
+{
+  
+  "cr_account_id": 	43909,
+  "cr_person_id": 91426053000124,
+  "cr_registration_id": "56b31040-664a-4a6d-b9f9-e142d20f1f5c",
+  "origin": "CONCIERGE"
+ 
+}
+
+
+###
+
+
+POST /users/individuals
+Host: localhost:3333
+franchise_id: 123456
+Content-Type: application/json
+
+{
+	"is_pep": false,
+	//"is_foreign": false,
+	"name": "ROBISON PEREIRA MACHADO",
+	"document": "20593737008",
+	"email": "marcus@soganhei.com.br",
+	"birth_date": "1986-11-06",
+  "occupation_id": "c08bf948-6fd6-489f-99a5-338c87eaf8c9",
+	"mother_name": "MARIA DA CONCEIÇÃO PEREIRA MACHADO",
+	"phone": "27925405082",
+	"profession_id": "1",
+	"identity_type": "rg",
+	"identity_number": "0002245921",
+	"identity_issued_at": "2000-01-01",
+	"monthly_income": 10,
+	"password": "AJ@1234",
+	"pin": "3258",
+	"address": {
+		"street": "RUA MARIANO GARCIA",
+		"number": "113",
+		"extra": "",
+		"neighborhood": "AREIAS NEGRAS",
+		"city": "Marataízes",
+		"state": "ES",
+		"postal_code": "29345000"
+	}
+}
+###
+GET /users/individuals/occupations
+Host: localhost:3333
+Content-Type: application/json

@@ -1,0 +1,10 @@
+POST /graphic/denied
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiTUVNQkVSIiwic3ViIjoiNzU2MjJkMjMtMDAyYy00MTg0LTg5OTktNTlhZDIzNzY1MjE5IiwiaWF0IjoxNjkyNzk5MTI0LCJleHAiOjE2OTUzOTExMjR9.cyCV-Cpd51sSnAbJ4pwnHU0tyc4dC9hUpd_mFpkxGUU
+Content-Type: application/json
+
+{
+    "data": [
+        "19495486-0876-481f-b8a5-993c251ea5e3"
+    ]
+}
