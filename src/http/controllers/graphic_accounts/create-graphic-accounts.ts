@@ -1,6 +1,5 @@
 import { AppError } from "@/use-cases/errors/app-error";
 import { makeCreateGrapicAccountUseCase } from "@/use-cases/factories/graphic_accounts/make-create-graphic_accounts-use-case";
-import { generateUniqueIdentifier } from "@/use-cases/graphic_accounts/create-graphic_accounts";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
@@ -9,154 +8,92 @@ export async function createGraphicAccounts(
   reply: FastifyReply,
 ) {
   try {
+    // Log dos dados de requisição
+    console.log("Request received at createGraphicAccounts:");
+    console.log("Request Headers:", request.headers);  // Cabeçalhos
+    console.log("Request Body:", request.body);  // Corpo da requisição
+
+    // Validação do schema
     const schema = z.object({
-      document: z.string(),
-      rg_cnh: z.string().optional(),
-      email: z.string().optional(),
-      name: z.string().optional(),
-      password: z.string(),
-      type: z.string(),
-      isPoliticallyExposedPerson: z.boolean().optional(),
-      amountMonthlyInvoicing: z.number().optional(),
-      amountShareCapital: z.number().optional(),
-      corporateName: z.string().optional(),
-      fantasyName: z.string().optional(),
-      amountPatrimony: z.number().optional(),
-      activityCnae: z.string().optional(),
-      openingDate: z.string().optional(),
-      passwordEletronic: z.string().length(8),
-      blocked: z.boolean().default(false),
-      counter: z.number().default(0),
-      monthlyInvoicing: z.string().optional(),
-      educationLevel: z.string().optional(),
-      maritalStatus: z.string().optional(),
-      isRole: z.string(),
-      gender: z.string().optional(),
-      birthDate: z.string().optional(),
-      isUser: z.string().optional(),
-      planId: z.string().optional(),
-      pin: z.string(),
-      phone: z
-        .object({
-          number: z.string(),
-          type: z.string(),
-          ddd: z.string(),
-        })
-        .optional(),
-      address: z
-        .object({
-          state: z.string(),
-          publicPlace: z.string(),
-          number: z.string(),
-          zipCode: z.string(),
-          neighborhood: z.string(),
-          complement: z.string().optional(),
-          isConfirmed: z.boolean(),
-          type: z.string(),
-          cityId: z.number().optional(),
-          cityName: z.string().optional(),
-        })
-        .optional(),
-      partners: z
-        .object({
-          is_pep: z.boolean().optional(),
-          name: z.string().optional(),
-          document: z.string().optional(),
-          birthDate: z.string().optional(),
-          mother_name: z.string().optional(),
-          phone: z.object({
-            number: z.string(),
-            type: z.string(),
-            ddd: z.string(),
-          }),
-          address: z.object({
-            state: z.string(),
-            publicPlace: z.string(),
-            number: z.string(),
-            zipCode: z.string(),
-            neighborhood: z.string(),
-            complement: z.string().optional(),
-            isConfirmed: z.boolean(),
-            type: z.string(),
-            cityId: z.number().optional(),
-            cityName: z.string().optional(),
-          }),
-        })
-        .optional(),
+      name: z.string().nullable(), // Campo pode ser nulo
+      userName: z.string().optional(), // Opcional e único
+      hardPassword: z.string().optional(), // Opcional
+      password_hash: z.string().optional(), // Opcional
+      status: z.string().optional().default("active"), // Opcional
+      created_at: z.date().default(new Date()), // Data de criação com valor padrão
+      access_token: z.string().optional(), // Opcional
+      blocked: z.boolean().default(false), // Valor padrão
+      counter: z.number().default(0), // Valor padrão
+      role: z.enum(["MEMBER", "ADMIN", "USER"]).default("USER"), // Enum com valor padrão
     });
 
     const {
-      document,
-      email,
       name,
-      password,
-      passwordEletronic,
+      userName,
+      hardPassword,
+      password_hash,
+      status,
+      created_at,
+      access_token,
       blocked,
       counter,
-      isRole,
-      gender,
-      birthDate,
-      isUser,
-      rg_cnh,
-      address,
-      planId,
-      pin,
-      phone,
-      educationLevel,
-      maritalStatus,
-      monthlyInvoicing,
-      activityCnae,
-      amountMonthlyInvoicing,
-      amountPatrimony,
-      amountShareCapital,
-      corporateName,
-      fantasyName,
-      isPoliticallyExposedPerson,
-      openingDate,
-      partners,
-      type,
+      role,
     } = schema.parse(request.body);
 
-    const createGrapicAccountUseCase = makeCreateGrapicAccountUseCase();
-
-    const userIdCompare =
-      isRole === "WALLET" ? process.env.ADMIN_BAG_ID : isUser;
-
-    const account = await createGrapicAccountUseCase.execute({
-      userId: userIdCompare,
-      document,
-      email,
-      name: type === "PF" ? name! : partners!.name!,
-      password,
-      pin,
-      phone,
-      number_identifier: generateUniqueIdentifier(),
-      passwordEletronic,
+    console.log("Parsed request body:", {
+      name,
+      userName,
+      hardPassword,
+      password_hash,
+      status,
+      created_at,
+      access_token,
       blocked,
       counter,
-      role: isRole,
-      gender,
-      birthDate,
-      rg_cnh: type === "PF" ? rg_cnh : partners!.document!,
-      address,
-      planId,
-      educationLevel,
-      maritalStatus,
-      monthlyInvoicing,
-      amountMonthlyInvoicing,
-      isPoliticallyExposedPerson,
-      type,
-      activityCnae,
-      openingDate,
-      amountPatrimony,
-      amountShareCapital,
-      corporateName,
-      fantasyName,
-      partners,
+      role,
     });
 
+    // Criação do Use Case para criar a conta
+    const createGrapicAccountUseCase = makeCreateGrapicAccountUseCase();
+    console.log("Executing use case with the following data:", {
+      name,
+      userName,
+      hardPassword,
+      password_hash,
+      status,
+      created_at,
+      access_token,
+      blocked,
+      counter,
+      role,
+    });
+
+    const account = await createGrapicAccountUseCase.execute({
+      name,
+      userName,
+      hardPassword,
+      password_hash,
+      status,
+      created_at,
+      access_token,
+      blocked,
+      counter,
+      role,
+    });
+
+    console.log("Account created successfully:", account);
     return reply.status(200).send(account);
+
   } catch (error: any) {
-    throw new AppError(error);
+    // Log completo de erro
+    console.error("Error during account creation:", error);
+
+    // Se for um erro customizado (AppError), retorna 400
+    if (error instanceof AppError) {
+      return reply.status(400).send({ message: error.message });
+    }
+
+    // Caso seja um erro não tratado ou desconhecido, retorna 500
+    return reply.status(500).send({ message: "An unexpected error occurred", error: error.message });
   }
 }

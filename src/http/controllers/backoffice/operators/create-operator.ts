@@ -52,7 +52,6 @@ export async function createOperator(
     const createdOperator = await prisma.operatos.create({
       data: {
         ...data,
-        phone: phone,
       },
     });
 

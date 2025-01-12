@@ -37,6 +37,7 @@ import fastifyCors from "@fastify/cors";
 import { ZodError } from "zod";
 import { DeviceRoutes } from "./http/controllers/device/routes";
 import { DeviceTokenRoutes } from "./http/controllers/device_token/routes";
+import { OperatorsRoutes } from "./http/controllers/backoffice/operators/routes";
 
 if (env.NODE_ENV === "production") {
   Sentry.init({
@@ -100,6 +101,8 @@ app.register(UsersRoutes);
 app.register(LogsRoutes, { prefix: "log" });
 app.register(AccountsRoutes);
 app.register(GraphicAccountsRoutes, { prefix: "graphic" });
+// app.register(OperatorsRoutes, { prefix: "operator" });
+
 app.register(RechargePhoneRoutes, { prefix: "phone-recharges" });
 app.register(CardsRoutes, { prefix: "cards" });
 app.register(PixRoutes, { prefix: "pix" });
