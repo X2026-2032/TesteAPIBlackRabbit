@@ -3,11 +3,11 @@ import { hash } from "bcryptjs";
 import { GraphicAccountsUsersRepository } from "@/repositories/graphicAccount-respository";
 
 interface CreateGrapicAccountUseCaseRequest {
-  name?: string | null;
-  userName?: string | null;
-  hardPassword?: string | null;
-  password_hash?: string | null;
-  status?: string | null;
+  name?: string ;
+  userName?: string ;
+  hardPassword?: string ;
+  password_hash?: string ;
+  status?: string ;
   created_at: Date;
   access_token?: string;
   blocked: boolean;
@@ -48,7 +48,7 @@ export class CreateGrapicAccountUseCase {
       // Verificar se o usuário já existe
       console.log("Verificando se o usuário já existe no banco de dados...");
       const users = await prisma.graphicAccount.findFirst({
-        where: { userName: userName },
+        where: { userName },
       });
 
       if (users) {
@@ -66,13 +66,15 @@ export class CreateGrapicAccountUseCase {
       const graphicAccount = await prisma.graphicAccount.create({
         data: {
           name,
-          status: "active",
-          password_hash: hashedPassword,
+          userName, // Agora 'userName' é obrigatório
+          status: status || "active", // Ajuste se o status não for fornecido
+          password_hash: hashedPassword, // Usa o hash gerado
           counter,
           blocked,
           role,
           created_at,
-          hardPassword,
+          hardPassword, // Opcional, apenas se necessário
+          access_token,
         },
       });
 

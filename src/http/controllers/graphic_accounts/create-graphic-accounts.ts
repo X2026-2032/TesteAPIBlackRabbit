@@ -15,7 +15,7 @@ export async function createGraphicAccounts(
 
     // Validação do schema
     const schema = z.object({
-      name: z.string().nullable(), // Campo pode ser nulo
+      name: z.string().optional(), // Campo pode ser nulo
       userName: z.string().optional(), // Opcional e único
       hardPassword: z.string().optional(), // Opcional
       password_hash: z.string().optional(), // Opcional

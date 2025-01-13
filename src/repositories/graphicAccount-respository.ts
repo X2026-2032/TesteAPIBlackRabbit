@@ -4,13 +4,13 @@ export type GraphicAccountUser =
   | (GraphicAccount & {
       GraphicAccountUser: {
         id: string;
-        name: string | null;
-        userName: string | null;
-        hardPassword: string | null;
-        password: string | number | null;
-        status: string | null;
+        name: string;
+        userName: string;
+        hardPassword: string;
+        password: string;
+        status: string;
         created_at: Date;
-        access_token: string | null;
+        access_token: string;
         blocked: boolean;
         counter: number;
         role: "MEMBER" | "ADMIN" | "USER";        

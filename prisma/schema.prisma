@@ -36,23 +36,13 @@ model GraphicAccount {
   userName                   String?                      @unique
   hardPassword               String?   
   password_hash              String?
-  api_key                    String?
   status                     String?
   created_at                 DateTime                    @default(now())
   updated_at                 DateTime                    @updatedAt
-  user_id                    String?
-  number_identifier          String?
   access_token               String?
-  pin                        String?
-  security_eletronic         String?
-  status_pin_eletronic       Boolean                     @default(false)
   blocked                    Boolean                     @default(false)
   counter                    Int                         @default(0)
-  id_master_user             String?
-  status_master_user         Boolean                     @default(false)
   role                       Role                        @default(MEMBER)
-  pin_wallet                 String?
-  userType                   String?
   AuthToken                  AuthToken[]
   Notifications              Notifications[]
   Pictures                   Pictures[]
