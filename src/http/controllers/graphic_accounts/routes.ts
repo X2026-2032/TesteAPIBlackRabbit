@@ -5,7 +5,7 @@ import { verifyJwt } from "@/http/middlewares/verify-jwt";
 import { createGraphicAccounts } from "./create-graphic-accounts";
 import { depositGraphicAccounts } from "./deposit-graphic-accounts";
 import { withdrawGraphicAccounts } from "./withdraw-graphic-accounts";
-import { fetchGraphicAccounts } from "./fetch-graphic-accounts";
+import { fetchAllGraphicAccounts, fetchGraphicAccounts } from "./fetch-graphic-accounts";
 import { fetchGrapicAccountTransactionsById } from "./fetch-transactions-by-id";
 import { deniedGrapicAccountTransactions } from "./denied-transacions-graphic";
 import { approvedGrapicAccountTransactions } from "./approved-transacions-graphic";
@@ -20,13 +20,32 @@ import { verifyEmail } from "./verifyEmail";
 import { internalTransactionsBetweenWallet } from "@/http/controllers/graphic_accounts/internalTransactionsBetweenWallet";
 import { getGraphicAccountByNumberIdentifier } from "./get-account-by-number-identifier";
 import { verifySecurity } from "@/http/middlewares/verifySecurity";
+import { deleteUserByUserName } from "@/use-cases/graphic_accounts/delete-graphic_accounts";
 
 export async function GraphicAccountsRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
 
   app.get("/verify/email/:email/:cpf", verifyEmail);
 
-  app.get("/", { onRequest: [verifyJwt] }, fetchGraphicAccounts);
+  app.get("/", { onRequest: [verifyJwt] }, fetchAllGraphicAccounts);
+
+  app.get("/userName/:userName", fetchGraphicAccounts);
+  
+  app.delete("/delete", {
+    schema: {
+      body: {
+        type: "object",
+        properties: {
+          userName: { type: "string" }
+        },
+        required: ["userName"]
+      }
+    },
+    onRequest: [verifyJwt]
+  }, deleteUserByUserName);
+
+
+
 
   app.get(
     "/:id/transactions",
