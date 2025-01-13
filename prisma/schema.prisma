@@ -250,6 +250,7 @@ enum Role {
   MASTER
   OPERATOR
   USER
+  LIDER DE GRUPOS
 }
 
 enum TypeRolePlans {

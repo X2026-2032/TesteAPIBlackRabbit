@@ -1,30 +1,50 @@
-import { UsersRepository } from "@/repositories/users-respository";
 import { AppError } from "../errors/app-error";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 
 interface FetchGrapicAccountUseCaseRequest {
-  userId: string;
+  userId?: string; // Opcional para buscar por ID
+  userName?: string; // Opcional para buscar por userName
 }
 
 export class FetchGrapicAccountUseCase {
-  constructor(private usersRepository: UsersRepository) {}
-
-  async execute({ userId }: FetchGrapicAccountUseCaseRequest) {
-    const user = await this.usersRepository.findById(userId);
-
-    if (!user) {
-      throw new AppError({
-        status: 400,
-        code: "user.notfound",
-        message: "Conta não encontrada. fetch graphic",
+  async execute({ userId, userName }: FetchGrapicAccountUseCaseRequest) {
+    // Se userName for fornecido, busca pelo userName
+    if (userName) {
+      const user = await prisma.graphicAccount.findUnique({
+        where: { userName },
       });
+
+      if (!user) {
+        throw new AppError({
+          status: 400,
+          code: "user.notfound",
+          message: "Conta não encontrada pelo userName.",
+        });
+      }
+
+      return { user };
     }
 
+    // Se userId for fornecido, busca pelo ID do usuário
+    if (userId) {
+      const user = await prisma.graphicAccount.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new AppError({
+          status: 400,
+          code: "user.notfound",
+          message: "Conta não encontrada pelo ID.",
+        });
+      }
+
+      return { user };
+    }
+
+    // Caso nenhum filtro seja fornecido, retorna todos os usuários
     const accounts = await prisma.graphicAccount.findMany({
-      where: {
-        user_id: user.id,
-      },
       orderBy: {
         created_at: "desc",
       },
@@ -91,8 +111,9 @@ export async function changePasswordEletronic(
         id: userId,
       },
       data: {
-        security_eletronic: {
+        userName: {
           set: hashedPassword,
+          
         },
       },
     });

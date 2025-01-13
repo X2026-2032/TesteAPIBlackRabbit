@@ -1,30 +1,46 @@
-import { AppError } from "@/use-cases/errors/app-error";
-import { makeFetchGrapicAccountUseCase } from "@/use-cases/factories/graphic_accounts/make-fetch-graphic_accounts-use-case";
-
+import { prisma } from "@/lib/prisma";
 import { FastifyReply, FastifyRequest } from "fastify";
+
+export async function fetchAllGraphicAccounts(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  try {
+    const users = await prisma.graphicAccount.findMany({
+      orderBy: { created_at: "desc" },
+    });
+
+    return reply.status(200).send(users);
+  } catch (error) {
+    return reply.status(500).send({ error: "Internal Server Error" });
+  }
+}
 
 export async function fetchGraphicAccounts(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
   try {
-    const fetchGrapicAccountUseCase = makeFetchGrapicAccountUseCase();
+    const { userName } = request.query as { userName: string };
 
-    const isUserId =
-      request.user.sub === undefined || request.user.sub === null
-        ? "faaa6ca6-53c4-4699-b72f-ca9067621baa"
-        : request.user.sub;
+    if (!userName) {
+      return reply
+        .status(400)
+        .send({ error: "O parâmetro 'userName' é obrigatório." });
+    }
 
-    const accounts = await fetchGrapicAccountUseCase.execute({
-      userId: isUserId,
+    const account = await prisma.graphicAccount.findUnique({
+      where: { userName },
     });
 
-    return reply.status(200).send(accounts);
-  } catch (error) {
-    if (error instanceof AppError) {
-      reply.status(error.statusCode).send({ error: error.message });
-    } else {
-      reply.status(500).send({ error: "Internal Server Error" });
+    if (!account) {
+      return reply
+        .status(404)
+        .send({ error: "Nenhuma conta encontrada com esse userName." });
     }
+
+    return reply.status(200).send(account);
+  } catch (error) {
+    return reply.status(500).send({ error: "Internal Server Error" });
   }
 }
