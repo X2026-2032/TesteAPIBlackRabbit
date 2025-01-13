@@ -42,7 +42,7 @@ model GraphicAccount {
   access_token               String?
   blocked                    Boolean                     @default(false)
   counter                    Int                         @default(0)
-  role                       Role                        @default(MEMBER)
+  role                       Role                        @default(USUÁRIO)
   AuthToken                  AuthToken[]
   Notifications              Notifications[]
   Pictures                   Pictures[]
@@ -250,7 +250,8 @@ enum Role {
   MASTER
   OPERATOR
   USER
-  LIDER DE GRUPOS
+  USUÁRIO
+  GESTOR DE GRUPO
 }
 
 enum TypeRolePlans {
