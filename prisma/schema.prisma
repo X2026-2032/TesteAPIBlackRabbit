@@ -39,6 +39,8 @@ model GraphicAccount {
   status                     String?
   created_at                 DateTime                    @default(now())
   updated_at                 DateTime                    @updatedAt
+  publicKey       String?          // Chave pública para E2EE
+  privateKey      String?          // Chave privada para E2EE (criptografada no servidor)
   access_token               String?
   blocked                    Boolean                     @default(false)
   counter                    Int                         @default(0)
@@ -46,6 +48,12 @@ model GraphicAccount {
   AuthToken                  AuthToken[]
   Notifications              Notifications[]
   Pictures                   Pictures[]
+  groupMembers   GroupMember[]  @relation("GraphicAccountToGroupMember")
+  sentMessages PrivateMessage[] @relation("Sender")
+  receivedMessages PrivateMessage[] @relation("Receiver")
+
+ 
+
 
   @@map("graphic_accounts")
 }
@@ -319,4 +327,55 @@ enum TicketStatus {
   WAITING
   OPEN
   CLOSE
+}
+
+////////////////// aqui a relacao de usuarios e grupos //////////////
+
+model Group {
+  id               String          @id @default(uuid())
+  name             String
+  description      String?
+  ownerId          String          // Relacionamento com GraphicAccount
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+  members          GroupMember[]  // Relacionamento com membros do grupo
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id               String          @id @default(uuid())
+  groupId          String
+  graphicAccountId String
+  joined_at        DateTime        @default(now())
+  isBlocked        Boolean         @default(false)
+  role             GroupRole       @default(MEMBER)
+
+  group            Group           @relation(fields: [groupId], references: [id])
+  graphicAccount  GraphicAccount  @relation("GraphicAccountToGroupMember", fields: [graphicAccountId], references: [id])
+
+
+  @@map("group_members")
+}
+
+
+model PrivateMessage {
+  id               String          @id @default(uuid())
+  senderId         String
+  receiverId       String
+  content          String
+  isRead           Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  sender           GraphicAccount  @relation("Sender", fields: [senderId], references: [id])
+  receiver         GraphicAccount  @relation("Receiver", fields: [receiverId], references: [id])
+
+
+  @@map("private_messages")
+}
+
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
 }

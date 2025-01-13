@@ -36,7 +36,7 @@ export async function deleteUserByUserName(
   } catch (error) {
     console.error("Erro ao excluir o usuário:", error);
     return reply.status(400).send({
-      error: error.message || "Erro ao excluir o usuário.",
+      error: error || "Erro ao excluir o usuário.",
     });
   }
 }
