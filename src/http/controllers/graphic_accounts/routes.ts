@@ -20,6 +20,7 @@ import { verifyEmail } from "./verifyEmail";
 import { internalTransactionsBetweenWallet } from "@/http/controllers/graphic_accounts/internalTransactionsBetweenWallet";
 import { getGraphicAccountByNumberIdentifier } from "./get-account-by-number-identifier";
 import { verifySecurity } from "@/http/middlewares/verifySecurity";
+import { deleteUserByUserName } from "@/use-cases/graphic_accounts/delete-graphic_accounts";
 
 export async function GraphicAccountsRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
@@ -29,7 +30,19 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
   app.get("/", { onRequest: [verifyJwt] }, fetchAllGraphicAccounts);
 
   app.get("/userName/:userName", fetchGraphicAccounts);
-
+  
+  app.delete("/delete", {
+    schema: {
+      body: {
+        type: "object",
+        properties: {
+          userName: { type: "string" }
+        },
+        required: ["userName"]
+      }
+    },
+    onRequest: [verifyJwt]
+  }, deleteUserByUserName);
 
 
 
