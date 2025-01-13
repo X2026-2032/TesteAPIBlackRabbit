@@ -11,14 +11,14 @@ export class PrismaUsersRepository implements UsersRepository {
         document,
       },
       include: {
-        Account: {
-          select: {
-            refId: true,
-            branch_number: true,
-            account_number: true,
-            account_digit: true,
-          },
-        },
+        // Account: {
+        //   select: {
+        //     refId: true,
+        //     branch_number: true,
+        //     account_number: true,
+        //     account_digit: true,
+        //   },
+        // },
       },
     });
   }
@@ -29,7 +29,6 @@ export class PrismaUsersRepository implements UsersRepository {
         id,
       },
       include: {
-        Account: true,
       },
     });
   }

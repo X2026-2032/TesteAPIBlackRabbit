@@ -100,6 +100,7 @@ app.register(UsersRoutes);
 app.register(LogsRoutes, { prefix: "log" });
 app.register(AccountsRoutes);
 app.register(GraphicAccountsRoutes, { prefix: "graphic" });
+
 app.register(RechargePhoneRoutes, { prefix: "phone-recharges" });
 app.register(CardsRoutes, { prefix: "cards" });
 app.register(PixRoutes, { prefix: "pix" });

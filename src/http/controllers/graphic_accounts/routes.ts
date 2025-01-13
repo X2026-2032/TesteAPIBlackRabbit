@@ -64,11 +64,11 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
     approvedTaxAutomaticGrapicAccountTransactions,
   );
 
-  app.post(
-    "/wallet-transfer",
-    { onRequest: [verifyJwt, verifySecurity] },
-    internalTransactionsBetweenWallet,
-  );
+  // app.post(
+  //   "/wallet-transfer",
+  //   { onRequest: [verifyJwt, verifySecurity] },
+  //   internalTransactionsBetweenWallet,
+  // );
 
   app.patch("/change-password/:id", changeUserPassword);
   app.patch("/change-password-eletronic/:id", changeUserPasswordEletronic);

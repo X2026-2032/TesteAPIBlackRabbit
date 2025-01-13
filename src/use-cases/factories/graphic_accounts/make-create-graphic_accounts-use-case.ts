@@ -1,14 +1,11 @@
-import { PrismaAccountsRepository } from "@/repositories/prisma/prisma-accounts-repository";
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaGraphicAccountUsersRepository } from "@/repositories/prisma/prisma-graphicAccount-repository";
 import { CreateGrapicAccountUseCase } from "@/use-cases/graphic_accounts/create-graphic_accounts";
 
 export function makeCreateGrapicAccountUseCase() {
-  const usersRepository = new PrismaUsersRepository();
-  const accountsRepository = new PrismaAccountsRepository();
+  const usersGraphicRepository = new PrismaGraphicAccountUsersRepository();
 
   const createGrapicAccountUseCase = new CreateGrapicAccountUseCase(
-    usersRepository,
-    accountsRepository,
+    usersGraphicRepository,
   );
 
   return createGrapicAccountUseCase;
