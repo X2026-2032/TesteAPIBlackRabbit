@@ -156,7 +156,15 @@ export async function acceptInvite(groupId: string, username: string) {
     });
   }
 
-// Listar todos os grupos
+// Listar todos os grupos com os membros relacionados
 export async function getAllGroups() {
-  return prisma.group.findMany(); // Retorna todos os grupos
+  return prisma.group.findMany({
+    include: {
+      members: {
+        include: {
+          groupMembers: true, // Inclui informações dos membros do grupo
+        },
+      },
+    },
+  });
 }
