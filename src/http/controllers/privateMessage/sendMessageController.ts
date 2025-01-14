@@ -11,20 +11,34 @@ interface MessagePayload {
 
 export async function sendMessage(request: FastifyRequest, reply: FastifyReply) {
   try {
+    console.log("Request Body:", request.body); // Log para verificar o payload recebido
     const { senderId, receiverId, content } = request.body as MessagePayload;
 
-    // Obtendo os dados dos usuários
+    console.log("Buscando sender:", senderId);
     const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
+    console.log("Sender encontrado:", sender);
+
+    console.log("Buscando receiver:", receiverId);
     const receiver = await prisma.graphicAccount.findUnique({ where: { id: receiverId } });
+    console.log("Receiver encontrado:", receiver);
 
     if (!sender || !receiver) {
+      console.error("Usuário não encontrado");
       return reply.status(404).send({ message: "Usuário não encontrado" });
     }
-
-    // Criptografando a mensagem com a chave pública do destinatário
+    if (!sender.publicKey) {
+      return reply.status(400).send({ message: "Sender não possui chave pública configurada." });
+    }
+    
+    if (!receiver.publicKey) {
+      return reply.status(400).send({ message: "Receiver não possui chave pública configurada." });
+    }
+    
+    console.log("Iniciando criptografia");
     const encryptedContent = encryptMessage(content, receiver.publicKey as string);
+    console.log("Mensagem criptografada:", encryptedContent);
 
-    // Salvando a mensagem criptografada no banco
+    console.log("Salvando mensagem no banco");
     const message = await prisma.privateMessage.create({
       data: {
         content: encryptedContent,
@@ -32,9 +46,11 @@ export async function sendMessage(request: FastifyRequest, reply: FastifyReply) 
         receiverId: receiverId,
       },
     });
+    console.log("Mensagem salva:", message);
 
     return reply.status(201).send(message);
   } catch (error) {
-    return reply.status(500).send({ message: "Erro ao enviar mensagem" });
+    console.error("Erro ao enviar mensagem:", error);
+    return reply.status(500).send({ message: "Erro ao enviar mensagem", error: error });
   }
 }

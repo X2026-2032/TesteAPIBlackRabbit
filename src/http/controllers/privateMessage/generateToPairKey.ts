@@ -1,12 +1,10 @@
 import crypto from "crypto";
-
 export function generateKeyPair() {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
-    modulusLength: 2048,
+    modulusLength: 2048, // Tamanho da chave
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
 
-  return {
-    publicKey: publicKey.export({ type: "pkcs1", format: "pem" }).toString(),
-    privateKey: privateKey.export({ type: "pkcs1", format: "pem" }).toString(),
-  };
+  return { publicKey, privateKey };
 }

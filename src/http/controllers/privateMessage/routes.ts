@@ -5,11 +5,11 @@ import { getMessages } from "./listMessage";
 import { getPublicKey, savePublicKey } from "./messages-controller";
 export async function MessageRoutes(app: FastifyInstance) {
   // Adicionando rotas relacionadas a mensagens
-  app.post("/messages/send", async (request, reply) => {
+  app.post("/send", async (request, reply) => {
     await sendMessage(request, reply); // Passa `app.io` para o controlador
   });
 
-  app.get("/messages/:receiverId", getMessages);
+  app.get("/:receiverId", getMessages);
 
   // Rotas para manipulação de chaves públicas
   app.post("/users/:id/public-key", savePublicKey);
