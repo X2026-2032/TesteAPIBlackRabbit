@@ -10,6 +10,7 @@ import {
     rejectInvite,
     listAllGroups,
   } from "./groupController";  
+import { deleteGroupByName } from "./deleteGroup";
 
   export async function GroupRoutes(app: FastifyInstance) {
 
@@ -22,6 +23,8 @@ import {
     app.post('/reject-invite', rejectInvite);  // Nova rota 
     app.get('/list-groups/:graphicAccountId', listGroupsInGraphicAccount);
     app.get('/list-all', listAllGroups);
+    app.delete('/delete', deleteGroupByName);
+
 
   }
   
