@@ -14,7 +14,7 @@ export async function authenticate(
   try {
     const schema = z.object({
       userName: z.string(),
-      password_hash: z.string().min(8),
+      password_hash: z.string().min(4),
     });
 
     const { userName, password_hash } = schema.parse(request.body);
