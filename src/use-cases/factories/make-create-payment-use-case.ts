@@ -1,8 +1,8 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
+import { PrismaGraphicAccountUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { CreatePaymentUseCase } from "../create-payment";
 
 export function makeCreatePaymentUseCase() {
-  const usersRepository = new PrismaUsersRepository();
+  const usersRepository = new PrismaGraphicAccountUsersRepository();
 
   const createPaymentUseCase = new CreatePaymentUseCase(usersRepository);
 
