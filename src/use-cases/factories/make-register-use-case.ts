@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { RegisterIndividualsUseCase } from "../register-individuals/register-individuals";
 
 export function makeRegisterUseCase() {

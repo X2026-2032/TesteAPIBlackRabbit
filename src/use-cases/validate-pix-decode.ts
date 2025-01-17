@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { AppError } from "./errors/app-error";
 import { env } from "@/env";
 

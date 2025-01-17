@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import fs from "node:fs/promises";
 import { createReadStream } from "fs";
 import { MultipartFile } from "@fastify/multipart";

@@ -1,5 +1,5 @@
 import { PhoneRechargeRepository } from "@/repositories/phone-recharge-repository";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { CreateTransactionUseCase } from "../transactions/create-transactions";
 import { GetUsersAccountToken } from "../get-users-account-token";
 import { IdezPhoneRechargesService } from "@/service/idez/phone-recharges";

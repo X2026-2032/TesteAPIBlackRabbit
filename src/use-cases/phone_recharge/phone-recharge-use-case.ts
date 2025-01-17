@@ -2,7 +2,7 @@ import {
   PhoneRechargeData,
   PhoneRechargeRepository,
 } from "@/repositories/phone-recharge-repository";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { prisma } from "@/lib/prisma";
 import { GetUsersAccountToken } from "../get-users-account-token";
 import { IdezPhoneRechargesService } from "@/service/idez/phone-recharges";

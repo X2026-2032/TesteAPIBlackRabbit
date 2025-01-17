@@ -1,5 +1,5 @@
 import { SELECT_TRANSACTIONS } from "../transactions/get-transactions";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { prisma } from "@/lib/prisma";
 
 const select = SELECT_TRANSACTIONS;

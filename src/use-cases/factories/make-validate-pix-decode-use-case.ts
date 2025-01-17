@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { ValidatePixDecodeUseCase } from "../validate-pix-decode";
 
 export function makeValidatePixDecodeUseCase() {

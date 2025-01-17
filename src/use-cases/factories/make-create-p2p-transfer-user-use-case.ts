@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { CreateP2pTransferUseCaseUser } from "../create-p2p-transfer-user";
 
 export function makeCreateP2pTransferUseCaseUser() {

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { authenticate, completeUserVeriff } from "./authenticate";
+//import { authenticate, completeUserVeriff } from "./authenticate";
+import { authenticate } from "./authenticate";
 import { profile } from "./profile";
 import {
   registerIndividuals,
@@ -87,7 +88,7 @@ export async function UsersRoutes(app: FastifyInstance) {
     updateUserStatusController,
   );
 
-  app.post("/users/veriff", completeUserVeriff);
+  //app.post("/users/veriff", completeUserVeriff);
 
   app.patch("/update-config-gestor-status/:id", updateGestorStatus);
   app.patch("/update-config-blocked-password-status/:id", updateBlockedStatus);

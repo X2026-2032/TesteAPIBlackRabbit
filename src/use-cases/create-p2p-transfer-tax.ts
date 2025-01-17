@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { CreateTransactionUseCase } from "./transactions/create-transactions";
 import { GetUsersAccountToken } from "./get-users-account-token";
 import { IdezBankTransfersService } from "@/service/idez/bank-transfers";

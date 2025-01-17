@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { GetUsersAccountToken } from "./get-users-account-token";
 import { getBalanceUser } from "@/service/idez/get-balance";
 

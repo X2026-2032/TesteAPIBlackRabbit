@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { CreatePixTransferUseCase } from "../create-pix-transfer";
 
 export function makeCreatePixTransferUseCase() {
