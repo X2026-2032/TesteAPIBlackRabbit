@@ -1,7 +1,7 @@
 import { api, requestError } from "@/lib/axios";
 import { BankSlipRepository } from "@/repositories/bank-slip-repository";
 import { AppError } from "../errors/app-error";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import fs from "fs/promises";
 import { prisma } from "@/lib/prisma";
 import { createWriteStream } from "node:fs";

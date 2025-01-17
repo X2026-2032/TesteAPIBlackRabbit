@@ -1,6 +1,6 @@
 import { PrismaBankSlipRepository } from "@/repositories/prisma/prisma-bank-slip-repository";
 import { PrismaPayerRepository } from "@/repositories/prisma/prisma-payers-repository";
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { CreateBankSlipUseCase } from "@/use-cases/bank_slips/create-bank-slip";
 
 export function makeCreateBankSlipUseCase() {

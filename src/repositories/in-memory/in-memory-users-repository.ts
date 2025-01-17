@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { User, Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 

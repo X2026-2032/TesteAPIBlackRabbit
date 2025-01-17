@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { Account, User } from "@prisma/client";
 import { AccountsRepository } from "@/repositories/accounts-repository";
 import { prisma } from "@/lib/prisma";

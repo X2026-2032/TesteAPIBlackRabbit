@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { api, requestError } from "@/lib/axios";
 import { AppError } from "../errors/app-error";
 

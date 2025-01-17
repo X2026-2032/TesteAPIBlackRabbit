@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { PrismaCardsRepository } from "@/repositories/prisma/prisma-cards-repository";
 import { LockCardUseCase } from "@/use-cases/cards/lock-card";
 

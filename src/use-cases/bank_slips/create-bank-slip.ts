@@ -1,7 +1,7 @@
 import { api, requestError } from "@/lib/axios";
 import { BankSlipRepository } from "@/repositories/bank-slip-repository";
 import { PayerRepository } from "@/repositories/payer-repository";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { BankSlip, ChargeType, Prisma } from "@prisma/client";
 import { AppError } from "../errors/app-error";
 import { prisma } from "@/lib/prisma";

@@ -1,6 +1,6 @@
 import { api, requestError } from "@/lib/axios";
 import { prisma } from "@/lib/prisma";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { AppError } from "@/use-cases/errors/app-error";
 import { GetUsersAccountToken } from "@/use-cases/get-users-account-token";
 import { getMaxNumberOfTransactionByGraphicAccountTransactions } from "@/utils";

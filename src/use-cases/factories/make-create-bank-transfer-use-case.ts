@@ -1,4 +1,4 @@
-import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-repository";
+import { PrismaUsersRepository } from "@/repositories/prisma/prisma-users-messenger-repository";
 import { CreateBankTransferUseCase } from "../create-bank-transfer";
 import { PrismaBankTransfersRepository } from "@/repositories/prisma/prisma-bank-transfers-repository";
 import { PrismaAccountsRepository } from "@/repositories/prisma/prisma-accounts-repository";

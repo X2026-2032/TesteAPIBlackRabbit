@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { prisma } from "@/lib/prisma";
 import { AccountsRepository } from "@/repositories/accounts-repository";
 import { getMaxNumberOfTransactionByGraphicAccountTransactions } from "@/utils";

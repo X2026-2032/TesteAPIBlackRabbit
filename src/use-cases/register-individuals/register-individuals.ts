@@ -1,5 +1,5 @@
 import { IdezAccounts } from "@/service/idez/accounts";
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { prisma } from "@/lib/prisma";
 import generateUUID from "@/utils/generateUUID";
 import { AppError } from "../errors/app-error";

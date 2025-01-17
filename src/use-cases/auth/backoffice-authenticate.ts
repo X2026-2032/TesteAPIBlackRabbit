@@ -1,4 +1,4 @@
-import { UsersRepository } from "@/repositories/users-respository";
+import { UsersRepository } from "@/repositories/users-messenger-respository";
 import { Role } from "@prisma/client";
 import { AppError } from "../errors/app-error";
 import { prisma } from "@/lib/prisma";
