@@ -128,9 +128,18 @@ export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => 
   try {
     const invite = await prisma.invite.findFirst({
       where: {
-        senderId,
-        receiverId,
-        status: "PENDING",
+        OR: [
+          {
+            senderId,
+            receiverId,
+            status: "PENDING",
+          },
+          {
+            senderId: receiverId,
+            receiverId: senderId,
+            status: "PENDING",
+          },
+        ],
       },
     });
 
