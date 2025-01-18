@@ -57,12 +57,16 @@ model GraphicAccount {
   ownedGroups                Group[]                     @relation("GroupOwner")
   messages                   GroupMessage[]   @relation("MessageSender") // Relação com mensagens de grupo
 
+
   contacts                   Contact[]                   // Lista de contatos (muitos-para-muitos)
 
 contactsAsContact         Contact[]                   @relation("ContactRelation")
   audioCallsAsCaller         AudioVideoCall[]            @relation("AudioCallCaller")
   audioCallsAsReceiver       AudioVideoCall[]            @relation("AudioCallReceiver")
 
+ invitesSent    Invite[] @relation("SentInvites")
+  invitesReceived Invite[] @relation("ReceivedInvites")
+  
   @@map("graphic_accounts")
 }
 
@@ -475,6 +479,21 @@ model AudioVideoCall {
   
   @@map("audio_video_calls")
 }
+
+model Invite {
+  id             String          @id @default(uuid())
+  senderId       String          // Quem enviou o convite
+  receiverId     String          // Quem recebeu o convite
+  status         InviteStatus    @default(PENDING) // Pendente, Aceito ou Recusado
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+
+  sender         GraphicAccount  @relation("SentInvites", fields: [senderId], references: [id])
+  receiver       GraphicAccount  @relation("ReceivedInvites", fields: [receiverId], references: [id])
+
+  @@map("invites")
+}
+
 
 enum CallStatus {
   PENDING
