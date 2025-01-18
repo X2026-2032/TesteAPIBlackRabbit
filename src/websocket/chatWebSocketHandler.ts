@@ -35,7 +35,7 @@ export function setupChatWebSocket(io: Server) {
 
         // Salvando a mensagem no banco de dados
         await prisma.privateMessage.create({
-          data: { senderId, receiverId, content: encryptedMessage },
+          data: { senderId, receiverId, content: encryptedMessage, type: "private" },
         });
 
         // Enviando a mensagem criptografada para o destinatário via WebSocket

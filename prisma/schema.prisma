@@ -45,6 +45,7 @@ model GraphicAccount {
   blocked                    Boolean                     @default(false)
   counter                    Int                         @default(0)
   role                       Role                        @default(USER)
+  lastSeen                   DateTime?                   // Última atividade
   AuthToken                  AuthToken[]
   Notifications              Notifications[]
   Pictures                   Pictures[]
@@ -56,7 +57,11 @@ model GraphicAccount {
   ownedGroups                Group[]                     @relation("GroupOwner")
   messages                   GroupMessage[]   @relation("MessageSender") // Relação com mensagens de grupo
 
+  contacts                   Contact[]                   // Lista de contatos (muitos-para-muitos)
 
+contactsAsContact         Contact[]                   @relation("ContactRelation")
+  audioCallsAsCaller         AudioVideoCall[]            @relation("AudioCallCaller")
+  audioCallsAsReceiver       AudioVideoCall[]            @relation("AudioCallReceiver")
 
   @@map("graphic_accounts")
 }
@@ -253,7 +258,6 @@ model Attachment {
   @@map("attachments")
 }
 
-
 enum Role {
   ADMIN
   ADMIN_BAG
@@ -443,6 +447,40 @@ model MessageReaction {
   createdAt  DateTime @default(now())
   message    GroupMessage? @relation(fields: [messageId], references: [id])
   @@map("message_reactions")
+}
+
+
+model Contact {
+  id              String          @id @default(uuid())
+  graphicAccount  GraphicAccount  @relation(fields: [graphicAccountId], references: [id])
+  graphicAccountId String
+  contact         GraphicAccount  @relation("ContactRelation", fields: [contactId], references: [id])
+  contactId       String
+  created_at      DateTime        @default(now())
+
+  @@map("contacts")
+}
+
+model AudioVideoCall {
+  id             String        @id @default(uuid())
+  callerId       String
+  receiverId     String
+  startTime      DateTime      @default(now())
+  endTime        DateTime?
+  status         CallStatus    @default(PENDING)
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+  caller         GraphicAccount @relation("AudioCallCaller", fields: [callerId], references: [id])
+  receiver       GraphicAccount @relation("AudioCallReceiver", fields: [receiverId], references: [id])
+  
+  @@map("audio_video_calls")
+}
+
+enum CallStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 enum GroupRole {

@@ -7,12 +7,13 @@ interface MessagePayload {
   senderId: string;
   receiverId: string;
   content: string;
+  type: string;
 }
 
 export async function sendMessage(request: FastifyRequest, reply: FastifyReply) {
   try {
     console.log("Request Body:", request.body); // Log para verificar o payload recebido
-    const { senderId, receiverId, content } = request.body as MessagePayload;
+    const { senderId, receiverId, content, type: type } = request.body as MessagePayload;
 
     console.log("Buscando sender:", senderId);
     const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
@@ -44,6 +45,7 @@ export async function sendMessage(request: FastifyRequest, reply: FastifyReply) 
         content: encryptedContent,
         senderId: senderId,
         receiverId: receiverId,
+        type: type,
       },
     });
     console.log("Mensagem salva:", message);
