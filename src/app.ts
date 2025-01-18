@@ -40,6 +40,7 @@ import { DeviceTokenRoutes } from "./http/controllers/device_token/routes";
 import { MessageRoutes } from "./http/controllers/privateMessage/routes";
 import { GroupRoutes } from "./http/groups/routes";
 import { InviteRoutes } from "./http/controllers/invites/routes";
+import { ContactsRoutes } from "./http/controllers/contacts/routes";
 
 if (env.NODE_ENV === "production") {
   Sentry.init({
@@ -127,6 +128,7 @@ app.register(DeviceTokenRoutes);
 app.register(MessageRoutes, { prefix: "messages" }); 
 app.register( GroupRoutes, { prefix: "group" });
 app.register(InviteRoutes, { prefix: "/invite" });
+app.register(ContactsRoutes, { prefix: "/contacts" });
 
 
 
