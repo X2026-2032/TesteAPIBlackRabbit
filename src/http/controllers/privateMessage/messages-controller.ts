@@ -7,6 +7,7 @@ interface MessagePayload {
   senderId: string;
   receiverId: string;
   content: string;
+  type: string;
 }
 
 // Função para enviar mensagens
@@ -16,11 +17,11 @@ export async function sendMessage(
   io: Server
 ) {
   try {
-    const { senderId, receiverId, content } = request.body as MessagePayload;
+    const { senderId, receiverId, content, type } = request.body as MessagePayload;
 
     // Salva mensagem no banco de dados
     const message = await prisma.privateMessage.create({
-      data: { senderId, receiverId, content },
+      data: { senderId, receiverId, content, type, },
     });
 
     // Emite mensagem para o destinatário via WebSocket
