@@ -47,3 +47,5 @@ async function updateUsersWithKeys() {
 
 // Executar a função
 updateUsersWithKeys();
+
+// comando de execuçao -> npx ts-node -r tsconfig-paths/register --project tsconfig.json updateKeysForUsers.ts
