@@ -7,14 +7,14 @@ interface DeleteUserRequest {
 }
 
 export async function deleteUserByUserName(
-  request: FastifyRequest, // Podemos omitir a tipagem explícita aqui
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
   const { userName } = request.body as DeleteUserRequest; // Garantindo que o body seja do tipo DeleteUserRequest
 
   try {
     if (!userName) {
-      throw new Error("Deve-se fornecer um 'userName'.");
+      return reply.status(400).send({ error: "'userName' é obrigatório." });
     }
 
     // Verificando se o usuário existe
@@ -23,8 +23,13 @@ export async function deleteUserByUserName(
     });
 
     if (!user) {
-      throw new Error("Usuário não encontrado.");
+      return reply.status(404).send({ error: "Usuário não encontrado." });
     }
+
+    // Verificando e excluindo mensagens ou outras dependências, se necessário
+    await prisma.privateMessage.deleteMany({
+      where: { senderId: user.id }, // Caso o usuário tenha enviado mensagens
+    });
 
     // Deletar usuário
     await prisma.graphicAccount.delete({
@@ -35,6 +40,12 @@ export async function deleteUserByUserName(
     return reply.send({ message: "Usuário excluído com sucesso." });
   } catch (error) {
     console.error("Erro ao excluir o usuário:", error);
+
+    // Verificando se o erro tem um código de SQL
+    if (error) {
+      return reply.status(500).send({ error: `Erro do banco de dados: ${error}` });
+    }
+
     return reply.status(400).send({
       error: error || "Erro ao excluir o usuário.",
     });
