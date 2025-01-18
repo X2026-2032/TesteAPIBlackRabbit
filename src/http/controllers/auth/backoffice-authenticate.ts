@@ -40,6 +40,6 @@ export async function backofficeAuthenticate(
       token,
     });
   } catch (error) {
-    throw new AppError(error);
+    throw new AppError(error as Error);
   }
 }

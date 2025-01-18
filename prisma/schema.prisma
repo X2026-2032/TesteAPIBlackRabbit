@@ -51,9 +51,12 @@ model GraphicAccount {
   groupMembers   GroupMember[]  @relation("GraphicAccountToGroupMember")
   sentMessages PrivateMessage[] @relation("Sender")
   receivedMessages PrivateMessage[] @relation("Receiver")
- 
+  // Adicionar este campo de relação oposto
  // Adiciona a relação oposta para o owner no modelo Group
   ownedGroups                Group[]                     @relation("GroupOwner")
+  messages                   GroupMessage[]   @relation("MessageSender") // Relação com mensagens de grupo
+
+
 
   @@map("graphic_accounts")
 }
@@ -177,6 +180,8 @@ model Notifications {
   updated_at       DateTime        @updatedAt
   deleted_at       DateTime?
   GraphicAccount   GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
+  userId      String
+  content     String
 
   @@map("notifications")
 }
@@ -341,7 +346,12 @@ model Group {
   updated_at       DateTime        @updatedAt
   members          GroupMember[]  // Relacionamento com membros do grupo
 
-  owner            GraphicAccount  @relation("GroupOwner", fields: [ownerId], references: [id]) // Relacionamento com GraphicAccount via id
+ owner            GraphicAccount  @relation("GroupOwner", fields: [ownerId], references: [id]) // Relacionamento com GraphicAccount via id
+
+ // Adicionar este campo de relação oposto
+  messages   GroupMessage[]  @relation("GroupToMessages")
+
+//    messages         GroupMessage[]  // Relacionamento com mensagens
 
   @@map("groups")
 }
@@ -362,7 +372,6 @@ model GroupMember {
   // Relação oposta no modelo GraphicAccount
   //graphicAccounts  GraphicAccount[] @relation("GroupMemberToGraphicAccount")
 
-
   @@map("group_members")
 }
 
@@ -378,9 +387,63 @@ model PrivateMessage {
   receiver         GraphicAccount  @relation("Receiver", fields: [receiverId], references: [id])
 
 
+  type       String   // Texto, Imagem, Vídeo, Áudio
+  mediaUrl   String?
+  updatedAt  DateTime @updatedAt
+
+
   @@map("private_messages")
 }
 
+///////////////////
+model GroupMessage {
+
+
+
+
+  type       String   // Texto, Imagem, Vídeo, Áudio
+  mediaUrl   String?
+  pinned     Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+  
+  reactions  MessageReaction[]
+
+  id               String          @id @default(uuid())
+  groupId          String
+  senderId         String
+  content          String
+  isRead           Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+
+//group      Group    @relation(fields: [groupId], references: [id])
+  // Relacionamentos
+  sender           GraphicAccount  @relation("MessageSender", fields: [senderId], references: [id]) // Relação com o sender
+  group            Group           @relation("GroupToMessages", fields: [groupId], references: [id]) // Relacionamento com Group
+
+@@map("group_messages")
+}
+
+
+model Status {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String   // Texto ou link para mídia
+  type      String   // Texto, Imagem, Vídeo
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@map("statuses")
+}
+
+model MessageReaction {
+  id         String   @id @default(uuid())
+  messageId  String
+  userId     String
+  reaction   String
+  createdAt  DateTime @default(now())
+  message    GroupMessage? @relation(fields: [messageId], references: [id])
+  @@map("message_reactions")
+}
 
 enum GroupRole {
   OWNER

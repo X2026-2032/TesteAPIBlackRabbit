@@ -7,7 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   SENTRY_DSN: z.string(),
   JWT_SECRET: z.string(),
-  IDEZ_API_URL: z.string(),
+  //IDEZ_API_URL: z.string(),
   COMPANY_ID: z.string(),
 });
 

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { api } from "@/lib/axios";
 
-const baseUrl = process.env.IDEZ_API_URL;
+const baseUrl = process.env.IDEZ_API_URL || null;
 const urlApi = "/webhooks";
 
 const base64Credentials = Buffer.from(
