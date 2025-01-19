@@ -7,7 +7,7 @@ type Roles =
   | "WALLET"
   | "MASTER"
   | "ADMIN_BAG"
-  | "OPERATOR";
+  | "USER";
 
 export function verifyUserRole(rolesToVerify: Roles[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
