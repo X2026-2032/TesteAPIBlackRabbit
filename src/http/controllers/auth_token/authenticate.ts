@@ -16,12 +16,10 @@ export async function authenticateToken(
       include: {
         GraphicAccount: {
           include: {
-            account: true,
           },
         },
         User: {
           include: {
-            Account: true,
           },
         },
       },
@@ -30,7 +28,7 @@ export async function authenticateToken(
     const user = user_token?.User || (user_token?.GraphicAccount as any);
 
     const account = user_token?.User
-      ? user_token?.User?.Account
+      ? user_token?.User
       : user_token?.GraphicAccount;
 
     if (!user) {
@@ -49,35 +47,29 @@ export async function authenticateToken(
       },
     );
 
-    const userAccount =
-      user.role === "MEMBER" ||
-      user.role === "ADMIN" ||
-      user.role === "OPERATOR" ||
-      user.role === "ADMIN_BAG" ||
-      user.role === "MASTER"
-        ? await getMemberAdminAccount(user.id, user.refId as string)
-        : null;
+    // const userAccount =
+    //   user.role === "MEMBER" ||
+    //   user.role === "ADMIN" ||
+    //   user.role === "OPERATOR" ||
+    //   user.role === "ADMIN_BAG" ||
+    //   user.role === "MASTER"
+    //     ? await getMemberAdminAccount(user.id, user.refId as string)
+    //     : null;
 
-    const isGraphicAccountMember = await prisma.graphicAccount.findFirst({
-      where: {
-        id_master_user: user.id,
-      },
-    });
+    // const isGraphicAccountMember = await prisma.graphicAccount.findFirst({
+    //   where: {
+    //     id_master_user: user.id,
+    //   },
+    // });
 
-    const address = await prisma.address.findFirst({
-      where: {
-        graphicId: user.id,
-      },
-    });
+    
 
     const data = {
       user: {
         ...user,
-        address,
         access_token: undefined,
-        idMasterUser: isGraphicAccountMember ? true : false,
+        //idMasterUser: isGraphicAccountMember ? true : false,
       },
-      account: userAccount || account,
       token,
     };
 
@@ -89,22 +81,3 @@ export async function authenticateToken(
   }
 }
 
-export async function getMemberAdminAccount(userId: string, refId: string) {
-  try {
-    const account = await prisma.account.findFirst({
-      where: {
-        user_id: userId,
-        refId,
-      },
-    });
-
-    if (!account) {
-      throw new AppError({ message: "Account not found for the user" });
-    }
-
-    // Retorna a conta
-    return account;
-  } catch (err: any) {
-    throw new Error(err);
-  }
-}
