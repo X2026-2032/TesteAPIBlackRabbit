@@ -66,10 +66,24 @@ contactsAsContact         Contact[]                   @relation("ContactRelation
 
  invitesSent    Invite[] @relation("SentInvites")
   invitesReceived Invite[] @relation("ReceivedInvites")
+
+   // Relacionamento com a nova entidade
+  userMetadata      UserMetadata?
   
   @@map("graphic_accounts")
 }
 
+model UserMetadata {
+  id         String           @id @default(uuid())
+  refId      String           @unique
+  lastSeen   DateTime?        // Última atividade do usuário
+  data       Json             // Dados adicionais armazenados em JSONB para maior flexibilidade
+
+  // Relacionamento reverso
+  account    GraphicAccount   @relation(fields: [refId], references: [id])
+
+  @@map("user_metadata")
+}
 
 
 model AccountToken {
@@ -388,7 +402,7 @@ model PrivateMessage {
   id               String          @id @default(uuid())
   senderId         String
   receiverId       String
-  content          String
+  content          Json            // Conteúdo da mensagem (armazenado como JSONB no PostgreSQL)
   isRead           Boolean         @default(false)
   createdAt        DateTime        @default(now())
   sender           GraphicAccount  @relation("Sender", fields: [senderId], references: [id])
@@ -419,7 +433,7 @@ model GroupMessage {
   id               String          @id @default(uuid())
   groupId          String
   senderId         String
-  content          String
+  content          Json
   isRead           Boolean         @default(false)
   createdAt        DateTime        @default(now())
 

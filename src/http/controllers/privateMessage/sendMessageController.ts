@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "@/lib/prisma";
 import { encryptMessage } from "./encriptionAndDescription";
+import { Server, Socket } from "socket.io";
 
 // Interface para tipar os dados das mensagens
 interface MessagePayload {
@@ -10,36 +11,28 @@ interface MessagePayload {
   type: string;
 }
 
+// Este método agora precisa receber a instância do Socket.io
 export async function sendMessage(request: FastifyRequest, reply: FastifyReply) {
   try {
-    console.log("Request Body:", request.body); // Log para verificar o payload recebido
-    const { senderId, receiverId, content, type: type } = request.body as MessagePayload;
+    const { senderId, receiverId, content, type } = request.body as MessagePayload;
 
-    console.log("Buscando sender:", senderId);
+    // Verificar se o remetente e o destinatário existem
     const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
-    console.log("Sender encontrado:", sender);
-
-    console.log("Buscando receiver:", receiverId);
     const receiver = await prisma.graphicAccount.findUnique({ where: { id: receiverId } });
-    console.log("Receiver encontrado:", receiver);
 
     if (!sender || !receiver) {
-      console.error("Usuário não encontrado");
       return reply.status(404).send({ message: "Usuário não encontrado" });
     }
-    if (!sender.publicKey) {
-      return reply.status(400).send({ message: "Sender não possui chave pública configurada." });
-    }
-    
-    if (!receiver.publicKey) {
-      return reply.status(400).send({ message: "Receiver não possui chave pública configurada." });
-    }
-    
-    console.log("Iniciando criptografia");
-    const encryptedContent = encryptMessage(content, receiver.publicKey as string);
-    console.log("Mensagem criptografada:", encryptedContent);
 
-    console.log("Salvando mensagem no banco");
+    // Verificar se ambos têm chaves públicas configuradas
+    if (!sender.publicKey || !receiver.publicKey) {
+      return reply.status(400).send({ message: "Ambos os usuários devem ter chaves públicas configuradas." });
+    }
+
+    // Criptografar o conteúdo da mensagem
+    const encryptedContent = encryptMessage(content, receiver.publicKey as string);
+
+    // Salvar mensagem no banco de dados
     const message = await prisma.privateMessage.create({
       data: {
         content: encryptedContent,
@@ -48,9 +41,20 @@ export async function sendMessage(request: FastifyRequest, reply: FastifyReply) 
         type: type,
       },
     });
-    console.log("Mensagem salva:", message);
+
+    // Acessar a instância do socket.io
+    const io: Server = request.app.io;  // Acessando a instância do socket.io
+    const receiverSocket: Socket | undefined = io.sockets.sockets.get(receiverId); // Buscando o socket do destinatário
+
+    // Verificar se o socket do destinatário está conectado
+    if (receiverSocket) {
+      receiverSocket.emit("newMessage", { encryptedContent, senderId, receiverId, type });
+    } else {
+      console.log("O destinatário não está conectado.");
+    }
 
     return reply.status(201).send(message);
+
   } catch (error) {
     console.error("Erro ao enviar mensagem:", error);
     return reply.status(500).send({ message: "Erro ao enviar mensagem", error: error });
