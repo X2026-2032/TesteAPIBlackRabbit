@@ -21,7 +21,9 @@ export async function fetchGraphicAccounts(
   reply: FastifyReply,
 ) {
   try {
-    const { userName } = request.query as { userName: string };
+    // Pega o parâmetro de rota
+    const { userName } = request.params as { userName: string };
+    console.log("userName recebido na rota:", userName);
 
     if (!userName) {
       return reply
@@ -29,18 +31,19 @@ export async function fetchGraphicAccounts(
         .send({ error: "O parâmetro 'userName' é obrigatório." });
     }
 
-    const account = await prisma.graphicAccount.findUnique({
+    const existUserName = await prisma.graphicAccount.findUnique({
       where: { userName },
     });
 
-    if (!account) {
+    if (!existUserName) {
       return reply
         .status(404)
         .send({ error: "Nenhuma conta encontrada com esse userName." });
     }
 
-    return reply.status(200).send(account);
+    return reply.status(200).send(existUserName);
   } catch (error) {
+    console.error("Erro ao buscar graphicAccount:", error);
     return reply.status(500).send({ error: "Internal Server Error" });
   }
 }
