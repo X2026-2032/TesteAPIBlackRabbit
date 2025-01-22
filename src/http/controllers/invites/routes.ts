@@ -1,22 +1,28 @@
 import { FastifyInstance } from "fastify";
-import { sendInvite, acceptInvite, rejectInvite } from "./inviteController";
+import { sendInvite, acceptInvite, rejectInvite, listInvites } from "./inviteController";
 
 export async function InviteRoutes(app: FastifyInstance) {
-  // Rota para enviar convite
-  app.post("/send", async (request, reply) => {
-    await sendInvite(request, reply);
-  });
+    // Rota para enviar convite
+    app.post("/send", async (request, reply) => {
+      await sendInvite(request, reply);
+    });
+  
+    // Rota para aceitar convite
+    app.post("/accept", async (request, reply) => {
+      await acceptInvite(request, reply);
+    });
+  
+    // Rota para recusar convite
+    app.post("/reject", async (request, reply) => {
+      await rejectInvite(request, reply);
+    });
+  
+    // Rota para listar convites
+    app.get("/list/:userId", async (request, reply) => {
+      await listInvites(request, reply);
+    });
+  }
 
-  // Rota para aceitar convite
-  app.post("/accept", async (request, reply) => {
-    await acceptInvite(request, reply);
-  });
-
-  // Rota para recusar convite
-  app.post("/reject", async (request, reply) => {
-    await rejectInvite(request, reply);
-  });
-}
 
 
 

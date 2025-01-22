@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { FastifyRequest, FastifyReply } from "fastify";
+import jwt from "jsonwebtoken";
+
 
 // Interface para os dados do convite
 interface InvitePayload {
@@ -129,3 +131,64 @@ export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     return reply.status(500).send({ error: "Erro ao recusar convite" });
   }
 };
+
+
+// Listar convites
+export const listInvites = async (req: FastifyRequest, reply: FastifyReply) => {
+  console.log("Recebendo requisição para listar convites...");
+
+  let userId: string | undefined;
+
+  try {
+    const authHeader = req.headers.authorization;
+    console.log("Cabeçalho de autorização:", authHeader);
+
+    if (!authHeader) {
+      console.log("Token de autorização ausente.");
+      return reply.status(401).send({ error: "Token de autorização ausente" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    console.log("Token extraído:", token);
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as { sub: string };
+    userId = decodedToken.sub;
+    console.log("User ID extraído do token:", userId);
+
+    if (!userId) {
+      console.log("Falha ao extrair o ID do usuário do token.");
+      return reply.status(400).send({ error: "Falha ao identificar o usuário" });
+    }
+
+    // Verificar se o usuário existe
+    console.log("Verificando existência do usuário...");
+    const user = await prisma.graphicAccount.findUnique({ where: { id: userId } });
+    console.log("Usuário encontrado:", user);
+
+    if (!user) {
+      console.log("Usuário não encontrado!");
+      return reply.status(404).send({ error: "Usuário não encontrado" });
+    }
+
+    // Buscar todos os convites relacionados ao usuário
+    console.log("Buscando convites relacionados ao usuário...");
+    const invites = await prisma.invite.findMany({
+      where: {
+        OR: [
+          { senderId: userId }, // Convites enviados pelo usuário
+          { receiverId: userId }, // Convites recebidos pelo usuário
+        ],
+      },
+      include: {
+        sender: { select: { id: true, userName: true } }, // Informações do remetente
+        receiver: { select: { id: true, userName: true } }, // Informações do destinatário
+      },
+    });
+    console.log("Convites encontrados:", invites);
+
+    return reply.status(200).send({ invites });
+  } catch (error) {
+    console.error("Erro ao listar convites:", error);
+    return reply.status(500).send({ error: "Erro ao listar convites" });
+  }
+}

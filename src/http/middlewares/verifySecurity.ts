@@ -7,10 +7,10 @@ export async function verifySecurity(
   reply: FastifyReply,
 ) {
   const queryParams = z.object({
-    security_key: z.string(),
+    password_hash: z.string(),
   });
 
-  const { security_key } = queryParams.parse(request.query);
+  const { password_hash } = queryParams.parse(request.query);
 
   const user_id = request.user.sub;
 
@@ -25,7 +25,7 @@ export async function verifySecurity(
     return;
   }
 
-  if (graphicAccount.security_eletronic !== security_key) {
+  if (graphicAccount.password_hash !== password_hash) {
     reply.status(401).send({ error: "Chave de segurança inválida" });
     return;
   }
