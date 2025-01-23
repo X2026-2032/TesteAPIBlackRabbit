@@ -8,36 +8,47 @@ interface DeleteGroupRequest {
 }
 
 export async function deleteGroupByName(
-  request: FastifyRequest, // Podemos omitir a tipagem explícita aqui
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { id, name } = request.body as DeleteGroupRequest; // Garantindo que o body seja do tipo DeleteUserRequest
+  const { name, ownerUsername } = request.body as { name: string; ownerUsername: string }; // Certifique-se de que está recebendo o `ownerUsername`
+
+  console.log("Nome do grupo:", name); // Verifique o nome do grupo
+  console.log("Username do proprietário:", ownerUsername); // Verifique o username do proprietário
+
+  if (!ownerUsername || !name) {
+    return reply.status(400).send({ error: "Nome do grupo ou usuário inválido." });
+  }
 
   try {
-    if (!id) {
-      throw new Error("Deve-se fornecer um 'name'.");
+    // Buscando o proprietário do grupo pelo username
+    const owner = await prisma.graphicAccount.findUnique({
+      where: { userName: ownerUsername },
+      include: {
+        ownedGroups: true, // Inclui os grupos que o usuário possui
+      },
+    });
+
+    if (!owner) {
+      throw new Error("Usuário não encontrado.");
     }
 
-    // Verificando se o usuário existe
-    const group = await prisma.group.findUnique({
-      where: { id },
-    });
+    // Verificando se o grupo existe e pertence ao proprietário
+    const group = owner.ownedGroups.find(group => group.name === name);
 
     if (!group) {
-      throw new Error("Grupo não encontrado.");
+      throw new Error("Grupo não encontrado ou o usuário não tem permissão para excluí-lo.");
     }
 
-    // Deletar usuário
+    // Excluindo o grupo
     await prisma.group.delete({
-      where: { id },
+      where: { id: group.id },
     });
 
-    console.log(`Grupo com name ${name} foi excluído com sucesso.`);
+    console.log(`Grupo com nome '${name}' foi excluído com sucesso.`);
     return reply.send({ message: "Grupo excluído com sucesso." });
   } catch (error) {
-    console.error("Erro ao excluir o Grupo:", error);
-    return reply.status(400).send({
-      error: error || "Erro ao excluir o Grupo.",
-    });
+    console.error("Erro ao excluir o grupo:", error);
+    return reply.status(400).send({ error: error || "Erro desconhecido ao excluir o grupo." });
   }
 }

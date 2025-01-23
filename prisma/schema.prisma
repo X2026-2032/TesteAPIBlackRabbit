@@ -390,6 +390,9 @@ model GroupMember {
 
   groupMembers             GraphicAccount[] @relation("GraphicAccountToGroupMember") // Adicionando a relação oposta
 
+ type                      String?             @default("GROUP")
+ created_at      DateTime?        @default(now())
+ updated_at     DateTime?      @updatedAt
 
   // Relação oposta no modelo GraphicAccount
   //graphicAccounts  GraphicAccount[] @relation("GroupMemberToGraphicAccount")
@@ -504,7 +507,7 @@ model Invite {
 
   sender         GraphicAccount  @relation("SentInvites", fields: [senderId], references: [id])
   receiver       GraphicAccount  @relation("ReceivedInvites", fields: [receiverId], references: [id])
-
+  type             String?          @default("USER")
   @@map("invites")
 }
 
