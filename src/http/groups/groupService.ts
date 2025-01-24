@@ -259,3 +259,116 @@ export async function listGroupInvitesService(graphicAccountId: string) {
     throw new Error('Erro ao listar convites de grupos');
   }
 }
+
+// // Serviço para listar todos os grupos em que o usuário é dono ou membro
+// export async function getUserGroupsWithMembership(username: string) {
+//   const user = await prisma.graphicAccount.findUnique({
+//     where: { userName: username },
+//   });
+//   if (!user) throw new Error("User not found");
+
+//   // Buscar os grupos onde o usuário é o dono
+//   const ownerGroups = await prisma.group.findMany({
+//     where: { ownerId: user.id },
+//     include: {
+//       members: true, // Inclui os membros para contagem
+//     },
+//   });
+
+//   // Buscar os grupos onde o usuário é membro
+//   const memberGroups = await prisma.groupMember.findMany({
+//     where: { graphicAccountId: user.id },
+//     include: {
+//       group: {
+//         include: {
+//           members: true,
+//         },
+//       },
+//     },
+//   });
+
+//   // Combina os dois tipos de grupos (dono e membro)
+//   const allGroups = [
+//     ...ownerGroups.map(group => ({
+//       ...group,
+//       role: 'owner',
+//     })),
+//     ...memberGroups.map(groupMember => ({
+//       ...groupMember.group,
+//       role: 'member',
+//     })),
+//   ];
+
+//   return allGroups.map(group => ({
+//     id: group.id,
+//     name: group.name,
+//     description: group.description || null,
+//     memberCount: group.members ? group.members.length : 0,
+//     role: group.role,
+//   }));
+// }
+
+// Serviço para listar todos os grupos em que o usuário é dono ou membro
+export async function getUserGroupsWithMembership(username: string) {
+  // Encontrar o usuário pelo nome de usuário
+  const user = await prisma.graphicAccount.findUnique({
+    where: { userName: username },
+  });
+  if (!user) throw new Error("User not found");
+
+  // Buscar os grupos onde o usuário é o dono
+  const ownerGroups = await prisma.group.findMany({
+    where: { ownerId: user.id },
+    include: {
+      members: {
+        include: {
+          groupMembers: true, // Inclui detalhes sobre cada membro
+        },
+      },
+      messages: true, // Inclui mensagens do grupo
+    },
+  });
+
+  // Buscar os grupos onde o usuário é membro
+  const memberGroups = await prisma.groupMember.findMany({
+    where: { graphicAccountId: user.id },
+    include: {
+      group: {
+        include: {
+          members: {
+            include: {
+              groupMembers: true, // Detalhes dos membros
+            },
+          },
+          messages: true, // Mensagens do grupo
+        },
+      },
+    },
+  });
+
+  // Combinar os dois tipos de grupos (dono e membro)
+  const allGroups = [
+    ...ownerGroups.map(group => ({
+      ...group,
+      role: "owner", // Define o papel do usuário como dono
+    })),
+    ...memberGroups.map(groupMember => ({
+      ...groupMember.group,
+      role: "member", // Define o papel do usuário como membro
+    })),
+  ];
+
+  // Mapear os dados para o formato necessário
+  return allGroups.map(group => ({
+    id: group.id,
+    name: group.name,
+    description: group.description || null,
+    memberCount: group.members.length, // Contagem de membros
+    role: group.role,
+    ownerId: group.ownerId,
+    ownerUserName: group.ownerUserName || null,
+    createdAt: group.created_at,
+    updatedAt: group.updated_at,
+    messages: group.messages, // Mensagens associadas ao grupo
+  }));
+}

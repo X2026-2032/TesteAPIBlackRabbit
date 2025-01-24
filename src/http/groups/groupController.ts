@@ -165,3 +165,18 @@ export async function listGroupInvitesController(req: FastifyRequest, reply: Fas
     return reply.status(500).send({ error: 'Erro ao listar convites de grupos' });
   }
 }
+
+export async function listUserGroups(request: FastifyRequest, reply: FastifyReply) {
+  const { username } = request.params as { username: string };
+
+  try {
+    // Chama o serviço para listar os grupos em que o usuário é dono ou membro
+    const groups = await groupService.getUserGroupsWithMembership(username);
+
+    // Retorna a resposta com os grupos
+    reply.status(200).send(groups);
+  } catch (error) {
+    console.error("Erro ao listar grupos do usuário:", error);
+    reply.status(400).send({ error: "Erro ao listar grupos." });
+  }
+}
