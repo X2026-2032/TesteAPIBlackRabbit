@@ -43,6 +43,7 @@ model GraphicAccount {
   privateKey      String?          // Chave privada para E2EE (criptografada no servidor)
   access_token               String?
   blocked                    Boolean                     @default(false)
+  isOnline                   Boolean                     @default(false)
   counter                    Int                         @default(0)
   role                       Role                        @default(USER)
   lastSeen                   DateTime?                   // Última atividade

@@ -12,6 +12,7 @@ import {
     editGroupByName,
     listGroupMembers,
     listGroupInvitesController,
+    listUserGroups,
   } from "./groupController";  
 import { deleteGroupByName } from "./deleteGroup";
 import { listGroupInvitesService } from "./groupService";
@@ -37,7 +38,8 @@ import { listGroupInvitesService } from "./groupService";
  // Rota para listar convites de grupos
 app.get('/list-invites/:graphicAccountId', listGroupInvitesController);
 
-
+// Adiciona a rota para listar os grupos do usuário
+app.get('/list/:username/all-groups', listUserGroups);
   }
   
   
