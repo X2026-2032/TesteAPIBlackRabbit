@@ -21,6 +21,7 @@ import { internalTransactionsBetweenWallet } from "@/http/controllers/graphic_ac
 import { getGraphicAccountByNumberIdentifier } from "./get-account-by-number-identifier";
 import { verifySecurity } from "@/http/middlewares/verifySecurity";
 import { deleteUserByUserName } from "@/use-cases/graphic_accounts/delete-graphic_accounts";
+import { updatePublicKey } from "./updatePublicKey";
 
 export async function GraphicAccountsRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
@@ -60,6 +61,7 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
   );
 
   app.post("/create", createGraphicAccounts);
+  app.patch("/:userName/update-publickey", { onRequest: [verifyJwt] }, updatePublicKey);
   app.post("/deposit", { onRequest: [verifyJwt] }, depositGraphicAccounts);
   app.post("/withdraw", { onRequest: [verifyJwt] }, withdrawGraphicAccounts);
   app.get("/card-machines/:graphic_account_id", listCardByUserMachines);

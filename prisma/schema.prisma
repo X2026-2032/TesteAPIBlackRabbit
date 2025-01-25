@@ -40,7 +40,6 @@ model GraphicAccount {
   created_at                 DateTime                    @default(now())
   updated_at                 DateTime                    @updatedAt
   publicKey       String?          // Chave pública para E2EE
-  privateKey      String?          // Chave privada para E2EE (criptografada no servidor)
   access_token               String?
   blocked                    Boolean                     @default(false)
   isOnline                   Boolean                     @default(false)
@@ -388,9 +387,9 @@ model GroupMember {
   inviteStatus              InviteStatus    @default(PENDING) // Status do convite
   group                     Group           @relation(fields: [groupId], references: [id])
  // graphicAccount            GraphicAccount  @relation("GroupMemberToGraphicAccount", fields: [graphicAccountId], references: [id])
-
+  ownerPublicKey           String?          //chave publica do grupo a mesma do gestor
   groupMembers             GraphicAccount[] @relation("GraphicAccountToGroupMember") // Adicionando a relação oposta
-
+  isOwner         Boolean  @default(false)  // Adiciona este campo para identificar o dono do grupo
  type                      String?             @default("GROUP")
  created_at      DateTime?        @default(now())
  updated_at     DateTime?      @updatedAt

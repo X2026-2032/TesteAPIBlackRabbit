@@ -26,6 +26,7 @@ export const listContacts = async (
       where: { graphicAccountId: userId },
       include: {
         contact: true,
+        graphicAccount: true,
       },
     });
 

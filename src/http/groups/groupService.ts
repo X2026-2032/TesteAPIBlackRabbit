@@ -13,7 +13,8 @@ export async function createGroup(
   });
   if (!owner) throw new Error("Owner not found");
 
-  return prisma.group.create({
+  // Cria o grupo
+  const group = await prisma.group.create({
     data: {
       name,
       description,
@@ -21,7 +22,20 @@ export async function createGroup(
       ownerUserName: owner.userName,
     },
   });
+
+  // Cria um registro de GroupMember para o dono do grupo
+  await prisma.groupMember.create({
+    data: {
+      groupId: group.id,
+      graphicAccountId: owner.id,
+      isOwner: true,  // Marca o usuário como dono do grupo
+      inviteStatus: 'ACCEPTED',  // O dono do grupo tem o convite aceito automaticamente
+    },
+  });
+
+  return group;  // Retorna o grupo criado
 }
+
 
 // Adicionar Usuário ao Grupo
 export async function addUserToGroup(groupId: string, username: string) {
@@ -111,6 +125,7 @@ export async function getGroupsInGraphicAccount(graphicAccountId: string) {
 }
 
 // Enviar Convite
+// Enviar Convite
 export async function sendInvite(groupId: string, username: string) {
   const group = await prisma.group.findUnique({
       where: { id: groupId },
@@ -133,35 +148,70 @@ export async function sendInvite(groupId: string, username: string) {
       throw new Error("Invite already sent or rejected");
   }
 
+  // Recuperar a chave pública do owner
+  const owner = await prisma.graphicAccount.findUnique({
+      where: { userName: group.ownerUserName! },
+  });
+  if (!owner) throw new Error("Owner not found");
+
+  const ownerPublicKey = owner.publicKey; // Supondo que você tem o campo `publicKey` no modelo `graphicAccount`
+
+  // Criação do convite, incluindo a chave pública do owner
   return prisma.groupMember.create({
       data: {
           groupId,
           graphicAccountId: user.id,
           inviteStatus: 'PENDING',
+          ownerPublicKey: ownerPublicKey, // Incluindo a chave pública no convite
       },
   });
 }
 
 
+
     // Aceitar Convite
+// Aceitar Convite
 export async function acceptInvite(groupId: string, username: string) {
-    const user = await prisma.graphicAccount.findUnique({
-      where: { userName: username },
-    });
-    if (!user) throw new Error("User not found");
-  
-    const invite = await prisma.groupMember.findFirst({
-      where: { groupId, graphicAccountId: user.id, inviteStatus: 'PENDING' },
-    });
-  
-    if (!invite) throw new Error("No pending invite found");
-  
-    return prisma.groupMember.update({
-      where: { id: invite.id },
-      data: { inviteStatus: 'ACCEPTED' },
-    });
+  const user = await prisma.graphicAccount.findUnique({
+    where: { userName: username },
+  });
+  if (!user) throw new Error("User not found");
+
+  const invite = await prisma.groupMember.findFirst({
+    where: { groupId, graphicAccountId: user.id, inviteStatus: 'PENDING' },
+  });
+
+  if (!invite) throw new Error("No pending invite found");
+
+  // Atualiza o status do convite para aceito
+  await prisma.groupMember.update({
+    where: { id: invite.id },
+    data: { inviteStatus: 'ACCEPTED' },
+  });
+
+  // Retorna a chave pública do criador do grupo
+  const groupOwner = await prisma.groupMember.findFirst({
+    where: { groupId, 
+      isOwner: true },  // Considerando que você tem um campo 'isOwner' para identificar o dono
+  });
+
+  if (!groupOwner) throw new Error("Group owner not found");
+
+  const ownerAccount = await prisma.graphicAccount.findUnique({
+    where: { id: groupOwner.graphicAccountId },
+  });
+
+  if (!ownerAccount || !ownerAccount.publicKey) {
+    throw new Error("Public key of the group owner not found");
   }
-  
+
+  // Agora você pode retornar a chave pública para o usuário que aceitou
+  return {
+    message: "Convite aceito com sucesso",
+    publicKey: ownerAccount.publicKey,  // Chave pública do dono do grupo
+  };
+}
+
   // Recusar Convite
   export async function rejectInvite(groupId: string, username: string) {
     const user = await prisma.graphicAccount.findUnique({
