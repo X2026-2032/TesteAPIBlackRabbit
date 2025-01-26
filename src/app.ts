@@ -82,7 +82,7 @@ export const io = new Server(app.server, {
 setupChatWebSocket(io);
 
 io.on("connection", (socket: Socket) => {
-  console.log("Cliente conectado");
+  console.log(`Cliente conectado pelo app.ts do bakend: ${socket.id}`);
 
   socket.on("disconnect", () => {
     console.log("Cliente desconectado");

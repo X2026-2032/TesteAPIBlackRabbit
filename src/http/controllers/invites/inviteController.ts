@@ -22,51 +22,62 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
       return reply.status(404).send({ error: "Usuário não encontrado" });
     }
 
- // Verificar se já existe um convite entre os usuários
-const existingInvite = await prisma.invite.findFirst({
-  where: {
-    OR: [
-      { senderId, receiverId },
-      { senderId: receiverId, receiverId: senderId },
-    ],
-  },
-});
+    // Verifica se o convite já existe
+    const existingInvite = await prisma.invite.findFirst({
+      where: {
+        OR: [
+          { senderId, receiverId },
+          { senderId: receiverId, receiverId: senderId },
+        ],
+      },
+    });
 
-if (existingInvite) {
-  if (existingInvite.status === "ACCEPTED") {
-    return reply.status(400).send({ error: "Convite já aceito" });
-  }
+    if (existingInvite) {
+      if (existingInvite.status === "ACCEPTED") {
+        return reply.status(400).send({ error: "Convite já aceito" });
+      }
 
-  if (existingInvite.status === "PENDING") {
-    return reply.status(400).send({ error: "Convite já enviado" });
-  }
+      if (existingInvite.status === "PENDING") {
+        return reply.status(400).send({ error: "Convite já enviado" });
+      }
 
-  // Se o convite foi recusado, atualizá-lo para reenviado (PENDING)
-  await prisma.invite.update({
-    where: { id: existingInvite.id },
-    data: { status: "PENDING", updated_at: new Date() },
-  });
+      // Se o convite foi recusado, atualizá-lo para reenviado (PENDING)
+      await prisma.invite.update({
+        where: { id: existingInvite.id },
+        data: { status: "PENDING", updated_at: new Date() },
+      });
 
-  return reply.status(200).send({ message: "Convite reenviado com sucesso" });
-}
+      return reply.status(200).send({ message: "Convite reenviado com sucesso" });
+    }
 
-// Criar um novo convite caso não exista nenhum registro entre os usuários
-const newInvite = await prisma.invite.create({
-  data: { senderId, receiverId, status: "PENDING" },
-});
+    // Criar um novo convite
+    const newInvite = await prisma.invite.create({
+      data: {
+        senderId,
+        receiverId,
+        status: "PENDING",
+      },
+    });
 
-    return reply.status(200).send({ message: "Convite enviado com sucesso", invite: newInvite });
+    // Incluindo a chave pública de João Batata no convite (dentro do convite)
+    const inviteData = {
+      message: "Convite enviado com sucesso",
+      invite: newInvite,
+      publicKey: sender.publicKey, // Adicionando a chave pública
+    };
+
+    return reply.status(200).send(inviteData);
   } catch (error) {
     console.error("Erro ao enviar convite:", error);
     return reply.status(500).send({ error: "Erro ao enviar convite" });
   }
 };
-
 // Aceitar convite
 export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => {
   const { senderId, receiverId } = req.body as InvitePayload;
 
   try {
+    // Verifica se o convite existe e está pendente
     const invite = await prisma.invite.findFirst({
       where: {
         OR: [
@@ -80,13 +91,13 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
       return reply.status(404).send({ error: "Convite não encontrado ou já processado" });
     }
 
-    // Atualizar status do convite para aceito
+    // Atualiza o status do convite para aceito
     await prisma.invite.update({
       where: { id: invite.id },
       data: { status: "ACCEPTED" },
     });
 
-    // Criar contatos bidirecionais
+    // Cria os contatos bidirecionais
     await prisma.contact.createMany({
       data: [
         { graphicAccountId: senderId, contactId: receiverId },
@@ -94,7 +105,20 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
       ],
     });
 
-    return reply.status(200).send({ message: "Convite aceito e contatos adicionados" });
+    // Obtém a chave pública do remetente (senderId)
+    const sender = await prisma.graphicAccount.findUnique({
+      where: { id: senderId },
+    });
+
+    if (!sender || !sender.publicKey) {
+      return reply.status(404).send({ error: "Chave pública do remetente não encontrada" });
+    }
+
+    // Retorna a resposta com a chave pública
+    return reply.status(200).send({
+      message: "Convite aceito e contatos adicionados",
+      publicKey: sender.publicKey, // Envia a chave pública de João Batata para Rogério
+    });
   } catch (error) {
     console.error("Erro ao aceitar convite:", error);
     return reply.status(500).send({ error: "Erro ao aceitar convite" });
