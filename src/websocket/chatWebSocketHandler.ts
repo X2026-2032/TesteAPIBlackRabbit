@@ -1,194 +1,197 @@
 import { Server, Socket } from "socket.io";
-import { prisma } from "@/lib/prisma";
-import { encryptMessage, decryptMessage } from "@/http/controllers/privateMessage/encriptionAndDescription";
+
+interface Message {
+  senderId: string;
+  receiverId: string;
+  content: string;
+  encryptedMessage?: string;  // Adicionando suporte a mensagens criptografadas
+  encryptedKey?: string;
+  iv?: string;
+  type?: string;
+  timestamp?: number | string | Date; 
+  status?: string;
+  authorName?: string;
+  action?: string;
+  chatId?: string;
+  authorId?: string;
+}
+
+
+
+interface Contact {
+  userId: string;
+  contactId: string;
+}
 
 export function setupChatWebSocket(io: Server) {
   console.log("Configurando WebSocket de bate-papo...");
 
-  io.on("connection", (socket: Socket) => {
-    console.log("Cliente conectado", socket.id);
+  // Armazenamento em memória
+  const messages: Message[] = [];
+  const contacts: Contact[] = [];
+  const invites: { senderId: string; receiverId: string; status: string }[] = [];
+  const messageQueues: { [userId: string]: Message[] } = {}; // Fila de mensagens para usuários offline
 
-    // Registrar o usuário quando se conecta
-    socket.on("register", (userId: string) => {
-      socket.join(userId); // Mantém o usuário "logado" enquanto ele estiver conectado
-      console.log(`${userId} conectado com o socket id ${socket.id}`);
+  io.on("connection", (socket) => {
+    console.log(`Usuário conectado: ${socket.id}`);
+  
+    // Evento disparado quando um usuário se conecta
+    socket.on("user_connected", (userId) => {
+      console.log(`Usuário ${userId} está agora online.`);
+  
+      // Adiciona o socket ao "quarto" do usuário
+      socket.join(userId);
+  
+      // Verifica se há mensagens pendentes para este usuário
+      if (messageQueues[userId] && messageQueues[userId].length > 0) {
+        console.log(`Enviando mensagens pendentes para o usuário ${userId}.`);
+  
+        // Envia todas as mensagens pendentes
+        messageQueues[userId].forEach((message) => {
+          io.to(userId).emit("receive_message", message);
+        });
+  
+        // Limpa a fila de mensagens após envio
+        delete messageQueues[userId];
+      }
     });
 
     // Enviar mensagens privadas
-  //  socket.on("send_message", async (data) => {
-    //   const { senderId, receiverId, content } = data;
-    //   try {
-    //     // Criptografa a mensagem
-    //   //  const encryptedMessage = encryptMessage(content, receiverId.publicKey);
-    
-    //     // Salva a mensagem criptografada
-    //     await prisma.privateMessage.create({
-    //       data: {
-    //         senderId,
-    //         receiverId,
-    //         //content: encryptedMessage,
-    //         content,
-    //         type: "private",
-    //       },
-    //     });
-    
-    //     // Emite a mensagem criptografada para o destinatário
-    //     io.to(receiverId).emit("receive_message", {
-    //       senderId,
-    //       content,
-    //     // content: encryptedMessage,
-
-    //     });
-    //   } catch (error) {
-    //     console.error("Erro ao enviar mensagem:", error);
-    //   }
-    // });
-
-    socket.on("send_message", async (data) => {
-      const { content, senderId, receiverId } = data;
-    
-      if (!content || !senderId || !receiverId) {
-        console.error("Dados incompletos para criar a mensagem");
-        return;
-      }
-    
-      try {
-        const message = await prisma.privateMessage.create({
-          data: {
-            content, // Conteúdo da mensagem
-            senderId, // ID do remetente
-            receiverId, // ID do destinatário
-            type: "text", // Adicione um tipo padrão ou personalizável
-            sender: { connect: { id: senderId } }, // Relacionamento com o remetente
-            receiver: { connect: { id: receiverId } }, // Relacionamento com o destinatário
-          },
-        });
-        console.log("Mensagem criada com sucesso:", message);
-      } catch (error) {
-        console.error("Erro ao criar a mensagem:", error);
-      }
-    });
-    
+      // Enviar mensagens privadas
+      socket.on("send_message", (data) => {
+        const { content, senderId, receiverId,
+          encryptedMessage, encryptedKey, iv,
+          authorName,
+          action,
+          type,
+          chatId,
+          timestamp,
+          authorId,
+          } = data;
+  
+        if (!content || !senderId || !receiverId) {
+          console.error("Dados incompletos para criar a mensagem");
+          return;
+        }
+  
+        const message: Message = {
+          authorId,
+          senderId,
+          receiverId,
+          content,
+          encryptedMessage,
+          encryptedKey,
+          iv,
+          authorName,
+          action,
+          type,
+          chatId,
+          timestamp
+        };
+  
+        console.log(`Mensagem recebida de ${senderId} para ${receiverId}:`, message);
+        console.log("Mensagem criada:", data)
+  
+        // Verificar se o destinatário está online
+        const recipientSocket = io.sockets.adapter.rooms.get(receiverId);
+        if (recipientSocket && recipientSocket.size > 0) {
+          // O destinatário está online
+          io.to(receiverId).emit("receive_message", message);
+          console.log("Mensagem enviada com sucesso.");
+        } else {
+          // O destinatário está offline, armazena a mensagem
+          console.log(`Destinatário ${receiverId} offline. Armazenando mensagem.`);
+          if (!messageQueues[receiverId]) {
+            messageQueues[receiverId] = [];
+          }
+          messageQueues[receiverId].push(message);
+        }
+      });
 
     // Adicionar um contato
-    socket.on("add_contact", async (data) => {
+    socket.on("add_contact", (data) => {
       const { userId, contactId } = data;
       try {
-        // Salva o contato no banco de dados
-        await prisma.contact.create({
-          data: {
-            graphicAccountId: userId,
-            contactId: contactId,
-          },
-        });
-
-        console.log(`Contato ${contactId} adicionado a lista de ${userId}`);    
+        // Adicionar contato na memória
+        contacts.push({ userId, contactId });
+        console.log(`Contato ${contactId} adicionado a lista de ${userId}`);
       } catch (error) {
         console.error("Erro ao adicionar contato:", error);
       }
-    })    
+    });
 
     // Remover um contato
-    socket.on("remove_contact", async (data) => {
+    socket.on("remove_contact", (data) => {
       const { userId, contactId } = data;
       try {
-        // Remover o contato da lista
-        await prisma.contact.deleteMany({
-          where: {
-            contactId: userId,
-            graphicAccountId: contactId,
-          },
-        });
-
-        console.log(`Contato ${contactId} removido da lista de ${userId}`);
+        // Remover contato da memória
+        const index = contacts.findIndex(
+          (contact) => contact.userId === userId && contact.contactId === contactId
+        );
+        if (index > -1) {
+          contacts.splice(index, 1);
+          console.log(`Contato ${contactId} removido da lista de ${userId}`);
+        }
       } catch (error) {
         console.error("Erro ao remover contato:", error);
       }
     });
 
     // Listar os contatos de um usuário
-    socket.on("get_contacts", async (userId: string) => {
+    socket.on("get_contacts", (userId: string) => {
       try {
-        const contacts = await prisma.contact.findMany({
-          where: { graphicAccountId: userId },
-          include: {
-            graphicAccount: true, // Inclui os dados do gráfico de contas (usuários)
-          },
-        });
-
-        socket.emit("contacts_list", contacts);
+        const userContacts = contacts.filter(
+          (contact) => contact.userId === userId
+        );
+        socket.emit("contacts_list", userContacts);
       } catch (error) {
         console.error("Erro ao listar contatos:", error);
       }
     });
 
-    // Recusar convite
-    socket.on("reject_invite", async (data) => {
+    // Enviar convite
+    socket.on("send_invite", (data) => {
       const { senderId, receiverId } = data;
       try {
-        const invite = await prisma.invite.findFirst({
-          where: {
-            senderId,
-            receiverId,
-            status: "PENDING",
-          },
-        });
+        // Verificar se já existe convite
+        const existingInvite = invites.find(
+          (invite) => invite.senderId === senderId && invite.receiverId === receiverId
+        );
 
-        if (!invite) {
-          console.log("Convite não encontrado ou já foi aceito/rejeitado");
+        if (existingInvite && existingInvite.status === "PENDING") {
+          console.log("Convite já enviado");
           return;
         }
 
-        await prisma.invite.update({
-          where: { id: invite.id },
-          data: { status: "REJECTED" },
-        });
+        // Criar um novo convite
+        invites.push({ senderId, receiverId, status: "PENDING" });
+        console.log(`Convite enviado de ${senderId} para ${receiverId}`);
 
-        console.log(`Convite recusado por ${receiverId}`);
-
-        // Notificar o remetente do convite recusado
-        io.to(senderId).emit("invite_rejected", { receiverId });
+        // Notificar o destinatário sobre o convite
+        io.to(receiverId).emit("receive_invite", { senderId });
       } catch (error) {
-        console.error("Erro ao recusar convite:", error);
+        console.error("Erro ao enviar convite:", error);
       }
     });
 
     // Aceitar convite
-    socket.on("accept_invite", async (data) => {
+    socket.on("accept_invite", (data) => {
       const { senderId, receiverId } = data;
       try {
-        const invite = await prisma.invite.findFirst({
-          where: {
-            senderId,
-            receiverId,
-            status: "PENDING",
-          },
-        });
+        const invite = invites.find(
+          (invite) => invite.senderId === senderId && invite.receiverId === receiverId && invite.status === "PENDING"
+        );
 
         if (!invite) {
           console.log("Convite não encontrado ou já foi aceito/rejeitado");
           return;
         }
 
-        await prisma.invite.update({
-          where: { id: invite.id },
-          data: { status: "ACCEPTED" },
-        });
+        invite.status = "ACCEPTED";
 
-        // Adicionar ambos os usuários à lista de contatos
-        await prisma.contact.create({
-          data: {
-            contactId: senderId,
-            graphicAccountId: receiverId,
-          },
-        });
-
-        await prisma.contact.create({
-          data: {
-            contactId: receiverId,
-            graphicAccountId: senderId,
-          },
-        });
+        // Adicionar ambos os usuários aos contatos na memória
+        contacts.push({ userId: senderId, contactId: receiverId });
+        contacts.push({ userId: receiverId, contactId: senderId });
 
         console.log(`Convite aceito por ${receiverId}`);
 
@@ -200,45 +203,27 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
-    // Enviar convite
-    socket.on("send_invite", async (data) => {
+    // Recusar convite
+    socket.on("reject_invite", (data) => {
       const { senderId, receiverId } = data;
       try {
-        const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
-        const receiver = await prisma.graphicAccount.findUnique({ where: { id: receiverId } });
+        const invite = invites.find(
+          (invite) => invite.senderId === senderId && invite.receiverId === receiverId && invite.status === "PENDING"
+        );
 
-        if (!sender || !receiver) {
-          console.log("Usuário não encontrado");
+        if (!invite) {
+          console.log("Convite não encontrado ou já foi aceito/rejeitado");
           return;
         }
 
-        const existingInvite = await prisma.invite.findFirst({
-          where: {
-            senderId,
-            receiverId,
-            status: "PENDING",
-          },
-        });
+        invite.status = "REJECTED";
 
-        if (existingInvite) {
-          console.log("Convite já enviado");
-          return;
-        }
+        console.log(`Convite recusado por ${receiverId}`);
 
-        await prisma.invite.create({
-          data: {
-            senderId,
-            receiverId,
-            status: "PENDING",
-          },
-        });
-
-        console.log(`Convite enviado de ${senderId} para ${receiverId}`);
-
-        // Notificar o destinatário sobre o convite
-        io.to(receiverId).emit("receive_invite", { senderId });
+        // Notificar o remetente do convite recusado
+        io.to(senderId).emit("invite_rejected", { receiverId });
       } catch (error) {
-        console.error("Erro ao enviar convite:", error);
+        console.error("Erro ao recusar convite:", error);
       }
     });
 

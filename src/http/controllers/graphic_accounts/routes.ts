@@ -61,7 +61,7 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
   );
 
   app.post("/create", createGraphicAccounts);
-  app.patch("/:userName/update-publickey", { onRequest: [verifyJwt] }, updatePublicKey);
+  app.patch("/:userName/update-publickey", updatePublicKey);
   app.post("/deposit", { onRequest: [verifyJwt] }, depositGraphicAccounts);
   app.post("/withdraw", { onRequest: [verifyJwt] }, withdrawGraphicAccounts);
   app.get("/card-machines/:graphic_account_id", listCardByUserMachines);
