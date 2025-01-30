@@ -298,6 +298,67 @@ socket.on('new:notification', (notification) => {
   // Aqui você pode exibir um modal ou uma notificação para o usuário
 });
 
+/////////////////////////////////////
+// Mapa para armazenar o socket.id baseado no userId
+const userSocketMap: { [userId: string]: string } = {};
+
+// Evento de conexão do socket
+socket.on('connect', () => {
+  const userId = socket.handshake.query.userId; // Pegue o userId do handshake
+  
+  // Verifique se userId é uma string
+  if (typeof userId === "string") {
+    userSocketMap[userId] = socket.id; // Armazena o socket.id mapeado pelo userId
+  } else {
+    console.error('userId não é uma string válida no handshake');
+  }
+});
+
+// Evento de desconexão do socket
+socket.on('disconnect', () => {
+  const userId = socket.handshake.query.userId; // Obtém o userId na desconexão
+  
+  // Verifique se userId é uma string antes de tentar acessar o mapa
+  if (typeof userId === "string" && userSocketMap[userId]) {
+    delete userSocketMap[userId]; // Remove o userId do mapa de sockets
+  } else {
+    console.error('userId não encontrado ou não é uma string válida');
+  }
+});
+
+// Função para pegar o socket.id com base no userId
+function getSocketIdByUserId(userId: string): string | undefined {
+  return userSocketMap[userId]; // Retorna o socket.id correspondente ao userId
+}
+
+// Evento de atualização do avatar do usuário
+socket.on('profilePictureUpdated', (newImageUrl, userId) => {
+  // Atualiza a imagem do usuário para todos os seus amigos
+  const userContacts = contacts.filter(contact => contact.userId === userId);
+  userContacts.forEach(contact => {
+    const contactSocketId = getSocketIdByUserId(contact.contactId);
+    if (contactSocketId) {
+      console.log(`Enviando atualização de avatar para o socket do contato ${contact.contactId}`);
+      io.to(contactSocketId).emit('profilePictureUpdated', newImageUrl);
+    }
+  });
+
+  // Atualiza a imagem do usuário para todos os grupos que ele pertence
+  // const userGroups = getUserGroups(userId);
+  // userGroups.forEach(groupId => {
+  //   console.log(`Enviando atualização de avatar para o grupo ${groupId}`);
+  //   io.to(groupId).emit('profilePictureUpdated', newImageUrl);
+  // });
+
+  // Emitir para o próprio usuário
+  console.log(`Enviando atualização de avatar para o próprio usuário ${userId}`);
+  io.to(userId).emit('profilePictureUpdated', newImageUrl);
+
+  console.log(`Imagem de perfil do usuário ${userId} atualizada para ${newImageUrl}`);
+});
+
+
+////////////////////
 // Exemplo de envio de notificação
   socket.on('new:notification', (data) => {
     const { userId, notification } = data;

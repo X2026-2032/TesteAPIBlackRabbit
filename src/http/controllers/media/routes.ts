@@ -5,6 +5,7 @@ import fs from "fs";
 import { updateProfilePicture } from "./update-profile-picture";
 import { verifyJwt } from "@/http/middlewares/verify-jwt";
 import { getProfilePicture } from "./get-profile-picture";
+import { getAllProfilePictures } from "./get-all-profile-picture-controller";
 
 // Configura o multer corretamente para o Fastify
 const storage = multer.diskStorage({
@@ -52,6 +53,11 @@ const upload = multer({
 
 export async function MediaRoutes(app: FastifyInstance) {
  // app.addHook("onRequest", verifyJwt);
+
+  // Rota para buscar todas as imagens de perfil dos contatos
+  app.get("/get-all-profile-pictures/:id", getAllProfilePictures);
+
+  // Rota para buscar a imagem de perfil de um contato
   app.get("/get-profile-picture/:id", getProfilePicture);
 
   // Rota para atualizar a imagem do perfil
