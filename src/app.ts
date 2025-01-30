@@ -58,9 +58,13 @@ if (env.NODE_ENV === "production") {
 //   createWebhooks();
 // }
 
+
+
 export const app = fastify({
   bodyLimit: 30000000, // + ou - 28MB
 });
+
+
 
 app.register(generated);
 
@@ -167,3 +171,4 @@ app
   .then(() => {
     console.log("🚀 HTTP Server Running!" + env.PORT);
   });
+

@@ -1,10 +1,8 @@
 import { AppError } from "@/use-cases/errors/app-error";
 import { MediaServices } from "@/use-cases/media";
 import { FastifyReply, FastifyRequest } from "fastify";
-
-interface RequestBody {
-  url: string;
-}
+import path from "path";
+import fs from "fs";
 
 interface RequestParams {
   id: string;
@@ -12,48 +10,98 @@ interface RequestParams {
 
 export async function updateProfilePicture(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
+  file: any
 ) {
   console.log("[Controller] Iniciando o método `updateProfilePicture`");
 
+   
+     
+  
+      // // Define o caminho de armazenamento para o arquivo
+      // const filePath = path.join(__dirname, "uploads", file.filename);
+      // const fileStream = fs.createWriteStream(filePath);
+  
+      // // Salva o arquivo
+      // file.pipe(fileStream);
+  
   try {
-    console.log("[Controller] Validando corpo da requisição...");
-    const requestBody = request.body as RequestBody;
-    console.log("[Controller] Corpo da requisição:", requestBody);
-
-    console.log("[Controller] Validando parâmetros da requisição...");
+    // Obtem os parâmetros da requisição
     const params = request.params as RequestParams;
-    console.log("[Controller] Parâmetros da requisição:", params);
 
-    if (!requestBody.url) {
-      console.error("[Controller] URL não fornecida no corpo da requisição");
-      return reply.status(400).send({ message: "URL is required." });
+    // Obtém o arquivo usando a função file() do fastify-multipart
+    const file = await request.file(); // Corrige para chamar a função assíncrona
+    if (!file) {
+      console.error("[Controller] Nenhum arquivo enviado.");
+      return reply.status(400).send({ message: "File is required." });
     }
+    console.log("[Controller] Arquivo recebido:", file.filename, file.mimetype);
 
+    // Verifica se o ID foi fornecido nos parâmetros
     if (!params.id) {
       console.error("[Controller] ID não fornecido nos parâmetros");
       return reply.status(400).send({ message: "User ID is required." });
     }
+    console.log("[Controller] ID do usuário:", params.id);
 
-    console.log("[Controller] Instanciando serviço de mídia...");
+    // Diretório de upload
+    const uploadDir = path.join(__dirname, "uploads", "avatars");
+    console.log("[Controller] Diretório de upload:", uploadDir);
+
+    // Obter a extensão do arquivo
+    const fileExtension = getFileExtension(file.mimetype); // Corrigido para usar file.mimetype
+    console.log("[Controller] Extensão do arquivo:", fileExtension);
+
+    const uploadPath = path.join(uploadDir, `${params.id}${fileExtension}`);
+    console.log("[Controller] Caminho para salvar o arquivo:", uploadPath);
+
+    // Verifica e cria o diretório, se necessário
+    if (!fs.existsSync(uploadDir)) {
+      console.log("[Controller] Diretório não existe. Criando diretório...");
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // Remove arquivo existente, se houver
+    if (fs.existsSync(uploadPath)) {
+      console.log("[Controller] Arquivo já existe. Deletando o arquivo anterior...");
+      fs.unlinkSync(uploadPath);
+    }
+
+    // Salva o arquivo no disco
+    console.log("[Controller] Iniciando a escrita do arquivo...");
+    await file.toBuffer().then((buffer) => fs.writeFileSync(uploadPath, buffer));
+    console.log("[Controller] Arquivo salvo com sucesso:", uploadPath);
+
+    // Atualiza a URL no banco de dados
     const mediaServices = new MediaServices();
-
-    console.log("[Controller] Chamando o serviço `update` com os dados:", {
-      url: requestBody.url,
-      userId: params.id,
-    });
+    const url = `/uploads/avatars/${params.id}${fileExtension}`;
+    console.log("[Controller] URL da imagem:", url);
 
     const response = await mediaServices.update({
-      url: requestBody.url,
       userId: params.id,
+      url,
     });
-
     console.log("[Controller] Resposta do serviço:", response);
 
-    console.log("[Controller] Enviando resposta ao cliente com status 201");
-    return reply.status(201).send(response);
+    return reply.status(201).send({ avatarUrl: url });
   } catch (error: any) {
     console.error("[Controller] Erro capturado:", error);
     throw new AppError(error);
+  }
+}
+
+// Função para obter a extensão do arquivo com base no tipo MIME
+function getFileExtension(mimeType: string): string {
+  console.log("[Controller] Verificando o tipo MIME:", mimeType);
+  switch (mimeType) {
+    case "image/jpeg":
+      return ".jpg";
+    case "image/png":
+      return ".png";
+    case "image/gif":
+      return ".gif";
+    default:
+      console.error("[Controller] Tipo de arquivo não suportado:", mimeType);
+      throw new AppError({ message: "Unsupported file type." });
   }
 }

@@ -92,6 +92,7 @@
     "fastify": "4.14.1",
     "fastify-file-upload": "4.0.0",
     "fastify-moment": "1.0.0",
+    "fastify-multer": "2.0.3",
     "fastify-multipart": "5.4.0",
     "fastify-socket.io": "5.0.0",
     "form-auto-content": "3.0.0",

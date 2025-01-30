@@ -21,12 +21,12 @@ export async function getMessages(request: FastifyRequest, reply: FastifyReply) 
     });
 
     // Descriptografando as mensagens
-    const decryptedMessages = messages.map((msg: { content: string; }) => ({
-      ...msg,
-      content: decryptMessage(msg.content, receiverId), // Use a chave privada do destinatário
-    }));
+    // const decryptedMessages = messages.map((msg: { content: string; }) => ({
+    //   ...msg,
+    //   content: decryptMessage(msg.content, receiverId), // Use a chave privada do destinatário
+    // }));
 
-    reply.send({ messages: decryptedMessages });
+    // reply.send({ messages: decryptedMessages });
   } catch (error) {
     return reply.status(500).send({ error: "Erro ao buscar mensagens" });
   }
