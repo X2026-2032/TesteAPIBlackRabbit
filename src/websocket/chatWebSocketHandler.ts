@@ -17,6 +17,7 @@ interface Message {
   chatId?: string;
   authorId?: string;
   isOwn?: boolean | string;
+  userId?: string;
 }
 
 
@@ -76,11 +77,10 @@ export function setupChatWebSocket(io: Server) {
           throw new Error("Dados incompletos para criar a mensagem.");
         }
     
-        const { content, senderId, receiverId, ...rest } = data;
-        const message: Message = { content, senderId, receiverId, ...rest };
+        const { content, senderId, receiverId, userId, ...rest } = data;
+        const message: Message = { content, senderId, receiverId, isOwn: senderId === userId ? true : false , ...rest };
     
         console.log(`Mensagem recebida de ${senderId} para ${receiverId}:`, message);
-    
         // Verifica se o destinatário está online
         const isOnline = io.sockets.adapter.rooms.has(receiverId); // Verifica se o usuário está conectado
     
@@ -355,6 +355,11 @@ socket.on('profilePictureUpdated', (newImageUrl, userId) => {
   io.to(userId).emit('profilePictureUpdated', newImageUrl);
 
   console.log(`Imagem de perfil do usuário ${userId} atualizada para ${newImageUrl}`);
+});
+
+socket.on("sendAudio", (audioBlob, userId) => {
+  console.log("Áudio recebido, retransmitindo..." , userId);
+  io.emit("receiveAudio", audioBlob , userId); // Envia para todos os clientes
 });
 
 
