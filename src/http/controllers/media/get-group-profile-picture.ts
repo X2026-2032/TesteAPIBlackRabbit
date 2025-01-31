@@ -1,11 +1,11 @@
-import { MediaServices } from "@/use-cases/media";
 import { FastifyReply, FastifyRequest } from "fastify";
 import path from "path";
 import fs from "fs";
+import { MediaGroupServices } from "@/use-cases/media/groups-service";
 
-const mediaServices = new MediaServices();
+const mediaServices = new MediaGroupServices();
 
-export async function getProfilePicture(
+export async function getGroupProfilePicture(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
@@ -20,14 +20,14 @@ export async function getProfilePicture(
     }
 
     console.log(`[Controller] Chamando MediaServices.list para ID: ${id}`);
-    const result = await mediaServices.list({ userId: id });
+    const result = await mediaServices.list({ groupId: id });
 
     if (!result.current) {
       console.log(`[Controller] Nenhuma imagem encontrada para o usuário: ${id}`);
       return reply.status(404).send({ message: "Profile picture not found." });
     }
 
-    const imagePath = path.join(process.cwd(), "uploads", result.current); // Caminho corrigido
+    const imagePath = path.join(process.cwd(), "uploads-groups", result.current); // Caminho corrigido
     
     if (!fs.existsSync(imagePath)) {
       console.log(`[Controller] Arquivo não encontrado: ${imagePath}`);

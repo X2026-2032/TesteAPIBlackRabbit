@@ -40,7 +40,7 @@ export async function getAllProfilePictures(
         continue;
       }
 
-      const imagePath = path.join(__dirname, "../../uploads", result.current);
+      const imagePath = path.join(process.cwd(), "uploads", result.current); // Alterado para a raiz do projeto
 
       if (!fs.existsSync(imagePath)) {
         console.log(`[Controller] Arquivo não encontrado: ${imagePath}`);
