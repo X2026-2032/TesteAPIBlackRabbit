@@ -3,13 +3,21 @@ import * as groupService from "./groupService";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 
-export async function createGroup( request: FastifyRequest, reply: FastifyReply) {
+export async function createGroup(request: FastifyRequest, reply: FastifyReply) {
   const { name, description, ownerUsername } = request.body as { name: string; description: string; ownerUsername: string };
+
   try {
+    // Criação do grupo
     const group = await groupService.createGroup(name, description, ownerUsername);
-    reply.status(201).send(group);
+
+    // Buscar o grupo novamente para incluir todos os dados necessários
+    const fullGroup = await prisma.group.findUnique({
+      where: { id: group.id },
+    });
+
+    reply.status(201).send(fullGroup);
   } catch (error) {
-    reply.status(400).send({ error });
+    reply.status(400).send({ error: (error as Error).message });
   }
 }
 

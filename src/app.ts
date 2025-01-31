@@ -38,7 +38,7 @@ import { ZodError } from "zod";
 import { DeviceRoutes } from "./http/controllers/device/routes";
 import { DeviceTokenRoutes } from "./http/controllers/device_token/routes";
 import { MessageRoutes } from "./http/controllers/privateMessage/routes";
-import { GroupRoutes } from "./http/groups/routes";
+import { GroupRoutes } from "./http/controllers/groups/routes";
 import { InviteRoutes } from "./http/controllers/invites/routes";
 import { ContactsRoutes } from "./http/controllers/contacts/routes";
 
