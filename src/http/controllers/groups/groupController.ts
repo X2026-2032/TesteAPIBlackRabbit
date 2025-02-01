@@ -12,7 +12,7 @@ export async function createGroup(request: FastifyRequest, reply: FastifyReply) 
 
     // Buscar o grupo novamente para incluir todos os dados necessários
     const fullGroup = await prisma.group.findUnique({
-      where: { id: group.id },
+      where: { id: group.group.id },
     });
 
     reply.status(201).send(fullGroup);

@@ -6,7 +6,7 @@ export class MediaGroupServices {
   // Método para listar imagens de perfil de um usuário
   async list({ groupId }: { groupId: string }) {
     console.log("[MediaServices] Iniciando método `list`");
-    console.log(`[MediaServices] Buscando usuário com ID: ${groupId}`);
+    console.log(`[MediaServices] Buscando grupo com ID: ${groupId}`);
 
     const directoryPath = path.join(process.cwd(), "uploads-groups"); // Alterado para a raiz do projeto
     console.log(`[MediaServices] Diretório de busca: ${directoryPath}`);
@@ -18,11 +18,11 @@ export class MediaGroupServices {
       const groupImage = files.find((file) => file.startsWith(groupId));
 
       if (!groupImage) {
-        console.warn("[MediaServices] Nenhuma imagem encontrada para o usuário.");
+        console.warn("[MediaServices] Nenhuma imagem encontrada para o grupo.");
         return { current: null };
       }
 
-      console.log(`[MediaServices] Imagem atual do usuário: ${groupImage}`);
+      console.log(`[MediaServices] Imagem atual do grupo: ${groupImage}`);
       return { current: groupImage };
     } catch (error) {
       console.error("[MediaServices] Erro ao listar imagens:", error);
@@ -40,7 +40,7 @@ export class MediaGroupServices {
       });
 
       if (!group) {
-        throw new Error("Usuário não encontrado.");
+        throw new Error("Grupo não encontrado.");
       }
 
       // Atualiza a imagem do perfil no banco
@@ -73,7 +73,7 @@ export class MediaGroupServices {
 
       return `/uploads-groups/${result.current}`; // Retorna a URL da imagem de perfil
     } catch (error) {
-      console.error("[MediaServices] Erro ao obter a imagem de perfil:", error);
+      console.error("[MediaServices] Erro ao obter a imagem de perfil do grupo:", error);
       return null;
     }
   }
@@ -103,7 +103,7 @@ export class MediaGroupServices {
       console.log("[MediaServices] Retornando imagens:", profilePictures);
       return profilePictures;
     } catch (error) {
-      console.error("[MediaServices] Erro ao buscar imagens de perfil:", error);
+      console.error("[MediaServices] Erro ao buscar imagens de perfil do grupo:", error);
       throw new Error("Erro ao buscar imagens de perfil");
     }
   }

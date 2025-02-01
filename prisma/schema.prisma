@@ -367,7 +367,7 @@ model Group {
   created_at       DateTime        @default(now())
   updated_at       DateTime        @updatedAt
   members          GroupMember[]  // Relacionamento com membros do grupo
-
+  isOwner          Boolean?  @default(true)  // Adiciona este campo para identificar o dono do grupo
  owner            GraphicAccount  @relation("GroupOwner", fields: [ownerId], references: [id]) // Relacionamento com GraphicAccount via id
 
  // Adicionar este campo de relação oposto
