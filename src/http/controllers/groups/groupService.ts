@@ -1,16 +1,21 @@
 import { prisma } from "@/lib/prisma";
 
 
-
 // Criar Grupo
 export async function createGroup(
   name: string,
   description: string,
   ownerUsername: string
 ) {
+  // Busca o dono do grupo com as relações de grupos
   const owner = await prisma.graphicAccount.findUnique({
     where: { userName: ownerUsername },
+    include: {
+      ownedGroups: { include: { members: true } }, // Grupos que o usuário é dono
+      groupMembers: { include: { group: { include: { members: true } } } }, // Grupos que ele participa
+    },
   });
+
   if (!owner) throw new Error("Owner not found");
 
   // Cria o grupo
@@ -33,8 +38,15 @@ export async function createGroup(
     },
   });
 
-  return group;  // Retorna o grupo criado
+  // Retorna o grupo criado junto com as informações do dono e os grupos associados
+  return {
+    group,
+    ownedGroups: owner.ownedGroups,  // Retorna os grupos que o usuário é dono
+    groupMembers: owner.groupMembers,  // Retorna os grupos que o usuário é membro
+  };
 }
+
+
 
 
 // Adicionar Usuário ao Grupo

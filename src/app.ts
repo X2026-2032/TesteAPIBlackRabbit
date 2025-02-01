@@ -38,7 +38,7 @@ import { ZodError } from "zod";
 import { DeviceRoutes } from "./http/controllers/device/routes";
 import { DeviceTokenRoutes } from "./http/controllers/device_token/routes";
 import { MessageRoutes } from "./http/controllers/privateMessage/routes";
-import { GroupRoutes } from "./http/groups/routes";
+import { GroupRoutes } from "./http/controllers/groups/routes";
 import { InviteRoutes } from "./http/controllers/invites/routes";
 import { ContactsRoutes } from "./http/controllers/contacts/routes";
 
@@ -58,9 +58,13 @@ if (env.NODE_ENV === "production") {
 //   createWebhooks();
 // }
 
+
+
 export const app = fastify({
   bodyLimit: 30000000, // + ou - 28MB
 });
+
+
 
 app.register(generated);
 
@@ -167,3 +171,4 @@ app
   .then(() => {
     console.log("🚀 HTTP Server Running!" + env.PORT);
   });
+

@@ -1,14 +1,14 @@
 // import { AppError } from "@/use-cases/errors/app-error";
-// import { MediaServices } from "@/use-cases/media";
 // import { FastifyReply, FastifyRequest } from "fastify";
 // import path from "path";
 // import fs from "fs";
+// import { MediaGroupServices } from "@/use-cases/media/groups-service";
 
 // interface RequestParams {
 //   id: string;
 // }
 
-// export async function updateProfilePicture(
+// export async function updateGroupProfilePicture(
 //   request: FastifyRequest,
 //   reply: FastifyReply,
 //   file: any
@@ -73,7 +73,7 @@
 //     console.log("[Controller] Arquivo salvo com sucesso:", uploadPath);
 
 //     // Atualiza a URL no banco de dados
-//     const mediaServices = new MediaServices();
+//     const mediaServices = new MediaGroupServices();
 //     const url = `/uploads/avatars/${params.id}${fileExtension}`;
 //     console.log("[Controller] URL da imagem:", url);
 

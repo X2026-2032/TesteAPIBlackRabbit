@@ -92,7 +92,7 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     }
 
     // Atualiza o status do convite para aceito
-    await prisma.invite.update({
+    const updatedInvite = await prisma.invite.update({
       where: { id: invite.id },
       data: { status: "ACCEPTED" },
     });
@@ -114,9 +114,10 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
       return reply.status(404).send({ error: "Chave pública do remetente não encontrada" });
     }
 
-    // Retorna a resposta com a chave pública
+    // Retorna a resposta com o convite atualizado e a chave pública
     return reply.status(200).send({
       message: "Convite aceito e contatos adicionados",
+      invite: updatedInvite, // Retorna o convite atualizado
       publicKey: sender.publicKey, // Envia a chave pública de João Batata para Rogério
     });
   } catch (error) {
@@ -124,6 +125,7 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     return reply.status(500).send({ error: "Erro ao aceitar convite" });
   }
 };
+
 
 // Recusar convite
 export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => {

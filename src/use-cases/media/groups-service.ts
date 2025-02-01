@@ -2,28 +2,28 @@ import { prisma } from "@/lib/prisma";
 import path from "path";
 import fs from "fs";
 
-export class MediaServices {
+export class MediaGroupServices {
   // Método para listar imagens de perfil de um usuário
-  async list({ userId }: { userId: string }) {
+  async list({ groupId }: { groupId: string }) {
     console.log("[MediaServices] Iniciando método `list`");
-    console.log(`[MediaServices] Buscando usuário com ID: ${userId}`);
+    console.log(`[MediaServices] Buscando grupo com ID: ${groupId}`);
 
-    const directoryPath = path.join(process.cwd(), "uploads"); // Alterado para a raiz do projeto
+    const directoryPath = path.join(process.cwd(), "uploads-groups"); // Alterado para a raiz do projeto
     console.log(`[MediaServices] Diretório de busca: ${directoryPath}`);
 
     try {
       const files = fs.readdirSync(directoryPath);
       console.log(`[MediaServices] Arquivos encontrados:`, files);
 
-      const userImage = files.find((file) => file.startsWith(userId));
+      const groupImage = files.find((file) => file.startsWith(groupId));
 
-      if (!userImage) {
-        console.warn("[MediaServices] Nenhuma imagem encontrada para o usuário.");
+      if (!groupImage) {
+        console.warn("[MediaServices] Nenhuma imagem encontrada para o grupo.");
         return { current: null };
       }
 
-      console.log(`[MediaServices] Imagem atual do usuário: ${userImage}`);
-      return { current: userImage };
+      console.log(`[MediaServices] Imagem atual do grupo: ${groupImage}`);
+      return { current: groupImage };
     } catch (error) {
       console.error("[MediaServices] Erro ao listar imagens:", error);
       return { current: null };
@@ -31,21 +31,21 @@ export class MediaServices {
   }
 
   // Método para atualizar a imagem de perfil do usuário
-  async update({ userId, url }: { userId: string; url: string }) {
+  async update({ groupId, url }: { groupId: string; url: string }) {
     console.log("[MediaServices] Iniciando método `update`");
 
     try {
-      const user = await prisma.graphicAccount.findUnique({
-        where: { id: userId },
+      const group = await prisma.group.findUnique({
+        where: { id: groupId },
       });
 
-      if (!user) {
-        throw new Error("Usuário não encontrado.");
+      if (!group) {
+        throw new Error("Grupo não encontrado.");
       }
 
       // Atualiza a imagem do perfil no banco
       await prisma.pictures.update({
-        where: { id: userId },
+        where: { id: groupId },
         data: { url },
       });
 
@@ -58,32 +58,32 @@ export class MediaServices {
   }
 
   // Método para obter a URL da imagem de perfil de um usuário
-  async getProfilePictureByUserId(userId: string): Promise<string | null> {
+  async getProfilePictureByGroupId(groupId: string): Promise<string | null> {
     try {
-      const result = await this.list({ userId });
+      const result = await this.list({ groupId });
 
       if (!result.current) {
         return null;
       }
 
-      const imagePath = path.join(process.cwd(), "uploads", result.current); // Alterado para a raiz do projeto
+      const imagePath = path.join(__dirname, "uploads-groups", result.current);
       if (!fs.existsSync(imagePath)) {
         return null;
       }
 
-      return `/uploads/${result.current}`; // Retorna a URL da imagem de perfil
+      return `/uploads-groups/${result.current}`; // Retorna a URL da imagem de perfil
     } catch (error) {
-      console.error("[MediaServices] Erro ao obter a imagem de perfil:", error);
+      console.error("[MediaServices] Erro ao obter a imagem de perfil do grupo:", error);
       return null;
     }
   }
 
   // Método para obter as imagens de perfil de todos os contatos de um usuário
-  async getAllProfilePictures(contactIds: string[]) {
+  async getAllProfilePictures(groupsIds: string[]) {
     console.log("[MediaServices] Iniciando método `getAllProfilePictures`");
 
     // Diretório onde as imagens estão armazenadas
-    const directoryPath = path.join(process.cwd(), "uploads"); // Alterado para a raiz do projeto
+    const directoryPath = path.join(process.cwd(), "uploads-groups"); // Alterado para a raiz do projeto
     console.log(`[MediaServices] Diretório de busca: ${directoryPath}`);
 
     try {
@@ -92,18 +92,18 @@ export class MediaServices {
       console.log(`[MediaServices] Arquivos encontrados:`, files);
 
       // Criar lista de imagens associadas aos usuários
-      const profilePictures = contactIds.map((userId) => {
-        const foundImage = files.find((file) => file.startsWith(userId));
+      const profilePictures = groupsIds.map((groupId) => {
+        const foundImage = files.find((file) => file.startsWith(groupId));
         return {
-          userId,
-          profilePictureUrl: foundImage ? `/uploads/${foundImage}` : null,
+          groupId,
+          profilePictureUrl: foundImage ? `/uploads-groups/${foundImage}` : null,
         };
       });
 
       console.log("[MediaServices] Retornando imagens:", profilePictures);
       return profilePictures;
     } catch (error) {
-      console.error("[MediaServices] Erro ao buscar imagens de perfil:", error);
+      console.error("[MediaServices] Erro ao buscar imagens de perfil do grupo:", error);
       throw new Error("Erro ao buscar imagens de perfil");
     }
   }
