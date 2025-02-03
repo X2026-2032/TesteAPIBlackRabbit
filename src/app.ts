@@ -27,17 +27,17 @@ import { GroupRoutes } from "./http/controllers/groups/routes";
 import { InviteRoutes } from "./http/controllers/invites/routes";
 import { ContactsRoutes } from "./http/controllers/contacts/routes";
 
-if (env.NODE_ENV === "production") {
-  Sentry.init({
-    dsn: env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-    integrations: [
-      new RewriteFrames({
-        root: global.__dirname,
-      }),
-    ],
-  });
-}
+// if (env.NODE_ENV === "production") {
+//   Sentry.init({
+//     dsn: env.SENTRY_DSN,
+//     tracesSampleRate: 1.0,
+//     integrations: [
+//       new RewriteFrames({
+//         root: global.__dirname,
+//       }),
+//     ],
+//   });
+// }
 
 // if (process.env.NODE_ENV === "production") {
 //   createWebhooks();

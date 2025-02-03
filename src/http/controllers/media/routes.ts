@@ -7,7 +7,7 @@ import { getGroupProfilePicture } from "./get-group-profile-picture";
 import { uploadGroup, uploadUser } from "@/utils/multer/multer-config";
 
 export async function MediaRoutes(app: FastifyInstance) {
-  app.addHook("onRequest", verifyJwt);
+ // app.addHook("onRequest", verifyJwt);
 
   //////////// user routes ////////////
   // Rota para buscar todas as imagens de perfil dos contatos
