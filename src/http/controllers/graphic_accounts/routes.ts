@@ -3,25 +3,13 @@ import { FastifyInstance } from "fastify";
 import { verifyJwt } from "@/http/middlewares/verify-jwt";
 
 import { createGraphicAccounts } from "./create-graphic-accounts";
-import { depositGraphicAccounts } from "./deposit-graphic-accounts";
-import { withdrawGraphicAccounts } from "./withdraw-graphic-accounts";
 import { fetchAllGraphicAccounts, fetchGraphicAccounts } from "./fetch-graphic-accounts";
-import { fetchGrapicAccountTransactionsById } from "./fetch-transactions-by-id";
-import { deniedGrapicAccountTransactions } from "./denied-transacions-graphic";
-import { approvedGrapicAccountTransactions } from "./approved-transacions-graphic";
 import { changeUserPassword } from "./changePasswordAccountGraphic";
-import { updateAccountStatus } from "./update-transaction-status-graphic-account";
 import { changeUserPasswordEletronic } from "./changePasswordEletronicAccountGraphic";
-import { approvedTaxAutomaticGrapicAccountTransactions } from "./approved-transacions-graphic-tax-automatic";
-import { listPlans } from "./list-plans";
 import { sendCodeEmail } from "./send-code-email";
-import { listCardByUserMachines } from "../backoffice/pagbank/card_machine/listCardMachinesByUser";
 import { verifyEmail } from "./verifyEmail";
-import { internalTransactionsBetweenWallet } from "@/http/controllers/graphic_accounts/internalTransactionsBetweenWallet";
 import { getGraphicAccountByNumberIdentifier } from "./get-account-by-number-identifier";
-import { verifySecurity } from "@/http/middlewares/verifySecurity";
 import { deleteUserByUserName } from "@/use-cases/graphic_accounts/delete-graphic_accounts";
-import { updatePublicKey } from "./updatePublicKey";
 
 export async function GraphicAccountsRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
@@ -48,42 +36,13 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
 
 
 
-  app.get(
-    "/:id/transactions",
-    { onRequest: [verifyJwt] },
-    fetchGrapicAccountTransactionsById,
-  );
+  
 
-  app.post(
-    "/:id/transactions/denied",
-    { onRequest: [verifyJwt] },
-    fetchGrapicAccountTransactionsById,
-  );
 
   app.post("/create", createGraphicAccounts);
-  app.patch("/:userName/update-publickey", updatePublicKey);
-  app.post("/deposit", { onRequest: [verifyJwt] }, depositGraphicAccounts);
-  app.post("/withdraw", { onRequest: [verifyJwt] }, withdrawGraphicAccounts);
-  app.get("/card-machines/:graphic_account_id", listCardByUserMachines);
-
-  //nega transacao
-  app.post(
-    "/transactions/denied",
-    { onRequest: [verifyJwt] },
-    deniedGrapicAccountTransactions,
-  );
-  //aprova transacao
-  app.post(
-    "/transactions/approved",
-    { onRequest: [verifyJwt] },
-    approvedGrapicAccountTransactions,
-  );
-
-  app.post(
-    "/transactions/approved-tax-automatic",
-    { onRequest: [verifyJwt] },
-    approvedTaxAutomaticGrapicAccountTransactions,
-  );
+ 
+ 
+ 
 
   // app.post(
   //   "/wallet-transfer",
@@ -93,9 +52,6 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
 
   app.patch("/change-password/:id", changeUserPassword);
   app.patch("/change-password-eletronic/:id", changeUserPasswordEletronic);
-
-  app.patch("/updateStatusGraphicTransaction/:id", updateAccountStatus);
-  app.get("/plans", listPlans);
 
   app.get("/wallet-account/info", getGraphicAccountByNumberIdentifier);
 

@@ -8,10 +8,7 @@ import {
 } from "./register-individuals";
 import { verifyJwt } from "@/http/middlewares/verify-jwt";
 import { registerCompanies } from "./register-companies";
-import { registerDocuments } from "./register-documents";
 import { up } from "./up";
-import { passwordResetController } from "../accounts/password-reset";
-import { updatePasswordController } from "../accounts/update-password";
 import { updateUserConfigKeyPix } from "./key-config-user-controller";
 import { getUserConfigKeyPix } from "./get-config-key-user";
 import { updateGestorStatus } from "./update-gestor-graphic-controller";
@@ -29,8 +26,6 @@ import { balanceteController } from "./balancete";
 
 export async function UsersRoutes(app: FastifyInstance) {
   app.get("/balancete", { onRequest: [verifyJwt] }, balanceteController);
-  app.post("/accounts/reset-password", passwordResetController);
-  app.patch("/accounts/reset-password", updatePasswordController);
 
   app.patch(
     "/change-password/:id",
@@ -69,8 +64,6 @@ export async function UsersRoutes(app: FastifyInstance) {
   // Authenticated
   app.get("/me", { onRequest: [verifyJwt] }, profile);
 
-  app.post("/users/documents", { onRequest: [verifyJwt] }, registerDocuments);
-  // app.post("/users/individuals/documents", { onRequest: [verifyJwt] }, registerIndividualsDocuments);
 
   app.patch(
     "/update-config-key-pix/:userId",

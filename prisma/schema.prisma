@@ -94,70 +94,6 @@ model AccountToken {
   @@map("accounts_token")
 }
 
-model Upbrand {
-  id         String   @id @default(uuid())
-  data       Json
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@map("upbrand")
-}
-
-
-
-model Plans {
-  id               String         @id @default(uuid())
-  name             String         @unique
-  description      String?
-  price            Float
-  subscribersIds   String[]
-  avaliableToRoles String[]
-  active           Boolean        @default(true)
-  SubscriptionPlan Subscription[]
-
-  @@map("plans")
-}
-
-model Subscription {
-  id         String             @id @default(uuid())
-  userId     String             @unique
-  planId     String
-  status     SubscriptionStatus @default(ACTIVE)
-  recurrence Int                @default(30)
-  created_at DateTime           @default(now())
-  updated_at DateTime           @default(now())
-  Invoice    Invoice[]
-  plan       Plans              @relation(fields: [planId], references: [id])
-}
-
-model Invoice {
-  id             String        @id @default(uuid())
-  description    String?
-  subscriptionId String
-  price          Float
-  status         InvoiceStatus @default(OPEN)
-  closeIn        DateTime
-  dueIn          DateTime
-  created_at     DateTime      @default(now())
-  updated_at     DateTime      @default(now())
-  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
-}
-
-
-
-
-
-model PixFavorites {
-  id          String   @id @default(uuid())
-  userId      String
-  contactName String
-  keyPix      String
-  keyType     String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  @@map("pix_favorites")
-}
 
 model Operatos {
   id            String          @id @default(uuid())
@@ -288,12 +224,6 @@ enum Role {
   MANAGER
 }
 
-enum TypeRolePlans {
-  MEMBERPJ
-  MEMBERPF
-  WALLET
-  GRAPHIC
-}
 
 enum Type {
   NATURAL
@@ -304,51 +234,6 @@ enum Type {
   ADM
 }
 
-enum ChargeType {
-  BANKSLIP
-  BANKSLIP_PIX
-}
-
-enum TypeSlip {
-  CHARGE
-  DEPOSIT
-}
-
-enum LimitDate {
-  D30
-  D60
-  D90
-}
-
-enum TaxKind {
-  FINE
-  INTEREST
-  DISCOUNT
-}
-
-enum TaxType {
-  PERCENTUAL
-  FIXED_AMOUNT
-  UNTIL_DATE
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  EXPIRED
-  CANCELED
-}
-
-enum InvoiceStatus {
-  OPEN
-  CLOSE
-  DUE
-  PAID
-}
-
-enum CardType {
-  VIRTUAL
-  PHYSICAL
-}
 
 enum TicketStatus {
   WAITING

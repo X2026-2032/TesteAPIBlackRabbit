@@ -1,6 +1,5 @@
 // import { compare } from 'bcryptjs'
 import { GraphicAccountsUsersRepository } from "@/repositories/users-messenger-respository";
-import { AccountsRepository } from "@/repositories/accounts-repository";
 import { AppError } from "./errors/app-error";
 import { GraphicAccount, User } from "@prisma/client";
 
@@ -21,8 +20,8 @@ interface AuthenticateUseCaseResponse {
 
 export class AuthenticateUseCase {
   constructor(
-    private usersRepository: GraphicAccountsUsersRepository,
-    private accountsRepository: AccountsRepository,
+    private usersRepository: GraphicAccountsUsersRepository
+  
   ) {}
 
   async execute({
