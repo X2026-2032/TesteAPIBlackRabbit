@@ -2,8 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { AppError } from "@/use-cases/errors/app-error";
-import { IdezAccounts } from "@/service/idez/accounts";
-import { makeRegisterIndividualsDocumentst } from "@/use-cases/factories/make-register-individuals";
 import { makeRegisterUseCase } from "@/use-cases/factories/make-register-use-case";
 import { Mail } from "@/utils/mail";
 
@@ -70,7 +68,7 @@ export async function registerIndividuals(
       {
         ...data,
       },
-      userId,
+      userId!,
     );
 
     const mail = new Mail();
@@ -101,11 +99,9 @@ export async function registerIndividualsDocuments(
       base64: z.string(),
     });
 
-    const usecase = makeRegisterIndividualsDocumentst();
     const data = schema.parse(request.body);
-    const response = await usecase.execute(data, request.user.sub);
 
-    return reply.status(200).send(response);
+    return reply.status(200).send(data);
   } catch (error) {
     throw new AppError(error as Error);
   }
@@ -116,8 +112,7 @@ export async function registerIndividualsOccupations(
   reply: FastifyReply,
 ) {
   try {
-    const response = await new IdezAccounts();
-    return reply.status(200).send(response);
+    return reply.status(200).send("nada aqui pra mostrar antiga accoun idez");
   } catch (error) {
     throw new AppError(error as Error);
   }

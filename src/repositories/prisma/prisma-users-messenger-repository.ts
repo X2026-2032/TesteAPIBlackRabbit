@@ -12,9 +12,6 @@ export class PrismaGraphicAccountUsersRepository implements GraphicAccountsUsers
       where: {
         id,
       },
-      include: {
-        _count: true,
-      },
     });
   }
 
