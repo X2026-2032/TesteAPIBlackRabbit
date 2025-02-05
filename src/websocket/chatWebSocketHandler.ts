@@ -6,11 +6,11 @@ interface Message {
   senderId: string;
   receiverId: string;
   content: string;
-  encryptedMessage?: string;  // Adicionando suporte a mensagens criptografadas
+  encryptedMessage?: string; // Adicionando suporte a mensagens criptografadas
   encryptedKey?: string;
   iv?: string;
   type?: string;
-  timestamp?: number | string | Date; 
+  timestamp?: number | string | Date;
   status?: string;
   authorName?: string;
   action?: string;
@@ -20,8 +20,6 @@ interface Message {
   userId?: string;
 }
 
-
-
 interface Contact {
   userId: string;
   contactId: string;
@@ -30,65 +28,87 @@ interface Contact {
 export function setupChatWebSocket(io: Server) {
   console.log("Configurando WebSocket de bate-papo...");
 
-  // Armazenamento em memória
-  const messages: Message[] = [];
   const contacts: Contact[] = [];
-  const invites: { senderId: string; receiverId: string; status: string }[] = [];
-  const messageQueues: { [userId: string]: Message[] } = {}; // Fila de mensagens para usuários offline
+  const invites: { senderId: string; receiverId: string; status: string }[] =
+    [];
+  const messageQueues: { [userId: string]: Message[] } = {};
 
+  const groupMessageQueues: { [groupId: string]: Message[] } = {};
 
+  const userGroupsMap: { [groupId: string]: string[] } = {};
+
+  const userStatusMap: {
+    [userId: string]: { online: boolean; lastSeen: number };
+  } = {};
 
   io.on("connection", (socket) => {
     console.log(`Usuário conectado: ${socket.id}`);
-  
-      // Usuário conectou
-      socket.on("user_connected", async (userId) => {
-        try {
-          console.log(`Usuário ${userId} está agora online.`);
-          socket.join(userId); // Adiciona ao "quarto" do usuário
-      
-          // Envia mensagens pendentes, se houver
-          if (messageQueues[userId] && messageQueues[userId].length > 0) {
-            console.log(`Enviando mensagens pendentes para o usuário ${userId}.`);
-            messageQueues[userId].forEach((message) => {
-              io.to(userId).emit("receive_message", message);
-            });
-            delete messageQueues[userId]; // Limpa a fila após envio
-          }
-        } catch (error) {
-          handleError(socket, error as Error, "user_connected");
-        }
-      });
-      
-      // Usuário desconectou
-      socket.on("disconnect", async () => {
-        try {
-          const userId = socket.id; // Aqui, ajuste dependendo de onde o userId é mapeado
-          console.log(`Usuário desconectado: ${userId}`);
-        } catch (error) {
-          console.error("Erro ao remover usuário do Redis:", error);
-        }
-      });
-      
-     // Usuário enviou mensagem
-     socket.on("send_message", async (data) => {
+
+    // Usuário conectou
+    socket.on("user_connected", async (userId) => {
+      userStatusMap[userId] = { online: true, lastSeen: Date.now() };
+    });
+
+    // Usuário desconectou
+    socket.on("disconnect", async () => {
+      const userId = Object.keys(userStatusMap).find(
+        (id) => userStatusMap[id].online,
+      );
+
+      if (userId) {
+        userStatusMap[userId].online = false;
+        userStatusMap[userId].lastSeen = Date.now();
+      }
+    });
+
+    socket.on("get_user_status", async (userId) => {
+      if (!userStatusMap[userId]) {
+        userStatusMap[userId] = {
+          online: false,
+          lastSeen: Date.now(),
+        };
+      }
+
+      const userStatus = userStatusMap[userId].online
+        ? { status: "online" }
+        : {
+            status: "offline",
+            lastSeen: userStatusMap[userId].lastSeen.toLocaleString(),
+          };
+
+      socket.emit("send_user_status", userStatus);
+    });
+
+    // Usuário enviou mensagem
+    socket.on("send_message", async (data) => {
       try {
         if (!validateFields(data, ["content", "senderId", "receiverId"])) {
           throw new Error("Dados incompletos para criar a mensagem.");
         }
-    
+
         const { content, senderId, receiverId, userId, ...rest } = data;
-        const message: Message = { content, senderId, receiverId, isOwn: senderId === userId ? true : false , ...rest };
-    
-        console.log(`Mensagem recebida de ${senderId} para ${receiverId}:`, message);
+        const message: Message = {
+          content,
+          senderId,
+          receiverId,
+          isOwn: senderId === userId ? true : false,
+          ...rest,
+        };
+
+        console.log(
+          `Mensagem recebida de ${senderId} para ${receiverId}:`,
+          message,
+        );
         // Verifica se o destinatário está online
         const isOnline = io.sockets.adapter.rooms.has(receiverId); // Verifica se o usuário está conectado
-    
+
         if (isOnline) {
           io.to(receiverId).emit("receive_message", message); // Envia para o destinatário
           console.log("Mensagem enviada com sucesso.");
         } else {
-          console.log(`Destinatário ${receiverId} offline. Armazenando mensagem.`);
+          console.log(
+            `Destinatário ${receiverId} offline. Armazenando mensagem.`,
+          );
           if (!messageQueues[receiverId]) {
             messageQueues[receiverId] = [];
           }
@@ -98,7 +118,7 @@ export function setupChatWebSocket(io: Server) {
         handleError(socket, error as Error, "send_message");
       }
     });
-    
+
     // Adicionar um contato
     socket.on("add_contact", (data) => {
       const { userId, contactId } = data;
@@ -117,7 +137,8 @@ export function setupChatWebSocket(io: Server) {
       try {
         // Remover contato da memória
         const index = contacts.findIndex(
-          (contact) => contact.userId === userId && contact.contactId === contactId
+          (contact) =>
+            contact.userId === userId && contact.contactId === contactId,
         );
         if (index > -1) {
           contacts.splice(index, 1);
@@ -132,7 +153,7 @@ export function setupChatWebSocket(io: Server) {
     socket.on("get_contacts", (userId: string) => {
       try {
         const userContacts = contacts.filter(
-          (contact) => contact.userId === userId
+          (contact) => contact.userId === userId,
         );
         socket.emit("contacts_list", userContacts);
       } catch (error) {
@@ -146,7 +167,8 @@ export function setupChatWebSocket(io: Server) {
       try {
         // Verificar se já existe convite
         const existingInvite = invites.find(
-          (invite) => invite.senderId === senderId && invite.receiverId === receiverId
+          (invite) =>
+            invite.senderId === senderId && invite.receiverId === receiverId,
         );
 
         if (existingInvite && existingInvite.status === "PENDING") {
@@ -170,7 +192,10 @@ export function setupChatWebSocket(io: Server) {
       const { senderId, receiverId } = data;
       try {
         const invite = invites.find(
-          (invite) => invite.senderId === senderId && invite.receiverId === receiverId && invite.status === "PENDING"
+          (invite) =>
+            invite.senderId === senderId &&
+            invite.receiverId === receiverId &&
+            invite.status === "PENDING",
         );
 
         if (!invite) {
@@ -199,7 +224,10 @@ export function setupChatWebSocket(io: Server) {
       const { senderId, receiverId } = data;
       try {
         const invite = invites.find(
-          (invite) => invite.senderId === senderId && invite.receiverId === receiverId && invite.status === "PENDING"
+          (invite) =>
+            invite.senderId === senderId &&
+            invite.receiverId === receiverId &&
+            invite.status === "PENDING",
         );
 
         if (!invite) {
@@ -219,161 +247,197 @@ export function setupChatWebSocket(io: Server) {
     });
 
     // Enviar mensagem em grupo
- // Armazenamento em memória para mensagens pendentes de grupos
-const groupMessageQueues: { [groupId: string]: Message[] } = {};
+    // Armazenamento em memória para mensagens pendentes de grupos
 
-// Enviar mensagem para todos os membros de um grupo
-socket.on("send_group_message", (data) => {
-  const {
-    content, senderId, groupId, encryptedMessage, encryptedKey, iv,
-    authorName, action, type, chatId, timestamp, authorId, id, isOwn, status
-  } = data;
+    // Enviar mensagem para todos os membros de um grupo
+    socket.on("send_group_message", (data) => {
+      const {
+        content,
+        senderId,
+        groupId,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        authorName,
+        action,
+        type,
+        chatId,
+        timestamp,
+        authorId,
+        id,
+        isOwn,
+        status,
+      } = data;
 
-  if (!content || !senderId || !groupId) {
-    console.error("Dados incompletos para criar a mensagem");
-    return;
-  }
+      if (!content || !senderId || !groupId) {
+        console.error("Dados incompletos para criar a mensagem");
+        return;
+      }
 
-  const message: Message = {
-    id,
-    authorId,
-    authorName,
-    action,
-    type,
-    chatId,
-    content,
-    encryptedMessage,
-    encryptedKey,
-    iv,
-    timestamp,
-    isOwn,
-    status,
-    senderId,
-    receiverId: groupId, // O "receiverId" é o ID do grupo, neste caso
-  };
+      const message: Message = {
+        id,
+        authorId,
+        authorName,
+        action,
+        type,
+        chatId,
+        content,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        timestamp,
+        isOwn,
+        status,
+        senderId,
+        receiverId: groupId, // O "receiverId" é o ID do grupo, neste caso
+      };
 
-  console.log(`Mensagem recebida de ${senderId} para o grupo ${groupId}:`, message);
+      console.log(
+        `Mensagem recebida de ${senderId} para o grupo ${groupId}:`,
+        message,
+      );
 
-  // Verificar se o grupo tem membros online
-  const groupMembers = io.sockets.adapter.rooms.get(groupId);
-  if (groupMembers && groupMembers.size > 0) {
-    // Emitir a mensagem para todos os membros online do grupo
-    io.to(groupId).emit("receive_group_message", message);
-    console.log(`Mensagem enviada para o grupo ${groupId}`);
-  } else {
-    // Se nenhum membro do grupo estiver online, armazenar a mensagem na fila
-    console.log(`Nenhum membro online no grupo ${groupId}. Armazenando mensagem.`);
-    if (!groupMessageQueues[groupId]) {
-      groupMessageQueues[groupId] = [];
-    }
-    groupMessageQueues[groupId].push(message);
-  }
-});
+      const connectedUsers = (userGroupsMap[groupId] || []).filter(
+        (userId) => userId !== senderId,
+      );
 
-// Enviar mensagens pendentes quando um usuário entra em um grupo
-socket.on("user_joined_group", (data) => {
-  const { userId, groupId } = data;
+      if (connectedUsers.length === 0) {
+      }
 
-  console.log(`Usuário ${userId} entrou no grupo ${groupId}`);
+      // Verificar se o grupo tem membros online
+      const groupMembers = io.sockets.adapter.rooms.get(groupId);
 
-  // Adicionar o usuário ao "room" do grupo
-  socket.join(groupId);
-
-  // Verificar se há mensagens pendentes para o grupo
-  if (groupMessageQueues[groupId] && groupMessageQueues[groupId].length > 0) {
-    console.log(`Enviando mensagens pendentes para o grupo ${groupId}`);
-    groupMessageQueues[groupId].forEach((message) => {
-      io.to(groupId).emit("receive_group_message", message);
+      if (groupMembers && groupMembers.size > 0) {
+        // Emitir a mensagem para todos os membros online do grupo
+        io.to(groupId).emit("receive_group_message", message);
+        console.log(`Mensagem enviada para o grupo ${groupId}`);
+      } else {
+        // Se nenhum membro do grupo estiver online, armazenar a mensagem na fila
+        console.log(
+          `Nenhum membro online no grupo ${groupId}. Armazenando mensagem.`,
+        );
+        if (!groupMessageQueues[groupId]) {
+          groupMessageQueues[groupId] = [];
+        }
+        groupMessageQueues[groupId].push(message);
+      }
     });
 
-    // Limpar a fila de mensagens do grupo
-    delete groupMessageQueues[groupId];
-  }
-});
+    // Enviar mensagens pendentes quando um usuário entra em um grupo
+    socket.on("user_joined_group", (data) => {
+      const { userId, groupId } = data;
 
+      console.log(`Usuário ${userId} entrou no grupo ${groupId}`);
+
+      // Adicionar o usuário ao "room" do grupo
+      socket.join(groupId);
+
+      if (!userGroupsMap[groupId]) {
+        userGroupsMap[groupId] = [];
+      }
+
+      if (!userGroupsMap[groupId].includes(userId)) {
+        userGroupsMap[groupId].push(userId);
+      }
+
+      // Verificar se há mensagens pendentes para o grupo
+      if (
+        groupMessageQueues[groupId] &&
+        groupMessageQueues[groupId].length > 0
+      ) {
+        console.log(`Enviando mensagens pendentes para o grupo ${groupId}`);
+        groupMessageQueues[groupId].forEach((message) => {
+          io.to(groupId).emit("receive_group_message", message);
+        });
+
+        // Limpar a fila de mensagens do grupo
+        delete groupMessageQueues[groupId];
+      }
+    });
+
+    socket.on("user_left_group", (data) => {
+      const { userId, groupId } = data;
+
+      if (!userGroupsMap[groupId]) return;
+
+      userGroupsMap[groupId] = userGroupsMap[groupId].filter(
+        (id) => id !== userId,
+      );
+
+      socket.leave(groupId);
+
+      if (userGroupsMap[groupId].length === 0) {
+        delete userGroupsMap[groupId];
+      }
+    });
 
     // Ouvindo notificações no front-end
-socket.on('new:notification', (notification) => {
-  console.log('Nova notificação:', notification);
-  // Aqui você pode exibir um modal ou uma notificação para o usuário
-});
+    socket.on("new:notification", (notification) => {
+      console.log("Nova notificação:", notification);
+      // Aqui você pode exibir um modal ou uma notificação para o usuário
+    });
 
-/////////////////////////////////////
-// Mapa para armazenar o socket.id baseado no userId
-const userSocketMap: { [userId: string]: string } = {};
+    // Evento de conexão do socket
+    socket.on("connect", () => {
+      const userId = socket.handshake.query.userId; // Pegue o userId do handshake
 
-// Evento de conexão do socket
-socket.on('connect', () => {
-  const userId = socket.handshake.query.userId; // Pegue o userId do handshake
-  
-  // Verifique se userId é uma string
-  if (typeof userId === "string") {
-    userSocketMap[userId] = socket.id; // Armazena o socket.id mapeado pelo userId
-  } else {
-    console.error('userId não é uma string válida no handshake');
-  }
-});
+      // Verifique se userId é uma string
+      if (typeof userId === "string") {
+        userSocketMap[userId] = socket.id; // Armazena o socket.id mapeado pelo userId
+      } else {
+        console.error("userId não é uma string válida no handshake");
+      }
+    });
 
-// Evento de desconexão do socket
-socket.on('disconnect', () => {
-  const userId = socket.handshake.query.userId; // Obtém o userId na desconexão
-  
-  // Verifique se userId é uma string antes de tentar acessar o mapa
-  if (typeof userId === "string" && userSocketMap[userId]) {
-    delete userSocketMap[userId]; // Remove o userId do mapa de sockets
-  } else {
-    console.error('userId não encontrado ou não é uma string válida');
-  }
-});
-
-// Função para pegar o socket.id com base no userId
-function getSocketIdByUserId(userId: string): string | undefined {
-  return userSocketMap[userId]; // Retorna o socket.id correspondente ao userId
-}
-
-// Evento de atualização do avatar do usuário
-socket.on('profilePictureUpdated', (newImageUrl, userId) => {
-  // Atualiza a imagem do usuário para todos os seus amigos
-  const userContacts = contacts.filter(contact => contact.userId === userId);
-  userContacts.forEach(contact => {
-    const contactSocketId = getSocketIdByUserId(contact.contactId);
-    if (contactSocketId) {
-      console.log(`Enviando atualização de avatar para o socket do contato ${contact.contactId}`);
-      io.to(contactSocketId).emit('profilePictureUpdated', newImageUrl);
+    // Função para pegar o socket.id com base no userId
+    function getSocketIdByUserId(userId: string): string | undefined {
+      return userSocketMap[userId]; // Retorna o socket.id correspondente ao userId
     }
-  });
 
-  // Atualiza a imagem do usuário para todos os grupos que ele pertence
-  // const userGroups = getUserGroups(userId);
-  // userGroups.forEach(groupId => {
-  //   console.log(`Enviando atualização de avatar para o grupo ${groupId}`);
-  //   io.to(groupId).emit('profilePictureUpdated', newImageUrl);
-  // });
+    // Evento de atualização do avatar do usuário
+    socket.on("profilePictureUpdated", (newImageUrl, userId) => {
+      // Atualiza a imagem do usuário para todos os seus amigos
+      const userContacts = contacts.filter(
+        (contact) => contact.userId === userId,
+      );
+      userContacts.forEach((contact) => {
+        const contactSocketId = getSocketIdByUserId(contact.contactId);
+        if (contactSocketId) {
+          console.log(
+            `Enviando atualização de avatar para o socket do contato ${contact.contactId}`,
+          );
+          io.to(contactSocketId).emit("profilePictureUpdated", newImageUrl);
+        }
+      });
 
-  // Emitir para o próprio usuário
-  console.log(`Enviando atualização de avatar para o próprio usuário ${userId}`);
-  io.to(userId).emit('profilePictureUpdated', newImageUrl);
+      // Atualiza a imagem do usuário para todos os grupos que ele pertence
+      // const userGroups = getUserGroups(userId);
+      // userGroups.forEach(groupId => {
+      //   console.log(`Enviando atualização de avatar para o grupo ${groupId}`);
+      //   io.to(groupId).emit('profilePictureUpdated', newImageUrl);
+      // });
 
-  console.log(`Imagem de perfil do usuário ${userId} atualizada para ${newImageUrl}`);
-});
+      // Emitir para o próprio usuário
+      console.log(
+        `Enviando atualização de avatar para o próprio usuário ${userId}`,
+      );
+      io.to(userId).emit("profilePictureUpdated", newImageUrl);
 
-socket.on("sendAudio", (audioBlob, userId) => {
-  console.log("Áudio recebido, retransmitindo..." , userId);
-  io.emit("receiveAudio", audioBlob , userId); // Envia para todos os clientes
-});
+      console.log(
+        `Imagem de perfil do usuário ${userId} atualizada para ${newImageUrl}`,
+      );
+    });
 
+    socket.on("sendAudio", (audioBlob, userId) => {
+      console.log("Áudio recebido, retransmitindo...", userId);
+      io.emit("receiveAudio", audioBlob, userId); // Envia para todos os clientes
+    });
 
-////////////////////
-// Exemplo de envio de notificação
-  socket.on('new:notification', (data) => {
-    const { userId, notification } = data;
-    io.to(userId).emit('new:notification', notification);
-  });
-
-
-    // Desconexão
-    socket.on("disconnect", () => {
-      console.log("Cliente desconectado", socket.id);
+    ////////////////////
+    // Exemplo de envio de notificação
+    socket.on("new:notification", (data) => {
+      const { userId, notification } = data;
+      io.to(userId).emit("new:notification", notification);
     });
   });
 }
