@@ -37,8 +37,10 @@ export function setupChatWebSocket(io: Server) {
 
   const userGroupsMap: { [groupId: string]: string[] } = {};
 
+  const userSocketMap: { [userId: string]: string } = {};
+
   const userStatusMap: {
-    [userId: string]: { online: boolean; lastSeen: number };
+    [userId: string]: { online: boolean; lastSeen: string };
   } = {};
 
   io.on("connection", (socket) => {
@@ -46,7 +48,10 @@ export function setupChatWebSocket(io: Server) {
 
     // Usuário conectou
     socket.on("user_connected", async (userId) => {
-      userStatusMap[userId] = { online: true, lastSeen: Date.now() };
+      userStatusMap[userId] = {
+        online: true,
+        lastSeen: new Date().toISOString(),
+      };
     });
 
     // Usuário desconectou
@@ -57,23 +62,23 @@ export function setupChatWebSocket(io: Server) {
 
       if (userId) {
         userStatusMap[userId].online = false;
-        userStatusMap[userId].lastSeen = Date.now();
+        userStatusMap[userId].lastSeen = new Date().toISOString();
       }
     });
 
     socket.on("get_user_status", async (userId) => {
-      if (!userStatusMap[userId]) {
-        userStatusMap[userId] = {
+      if (!userStatusMap[userId.userId]) {
+        userStatusMap[userId.userId] = {
           online: false,
-          lastSeen: Date.now(),
+          lastSeen: new Date().toISOString(),
         };
       }
 
-      const userStatus = userStatusMap[userId].online
+      const userStatus = userStatusMap[userId.userId].online
         ? { status: "online" }
         : {
             status: "offline",
-            lastSeen: userStatusMap[userId].lastSeen.toLocaleString(),
+            lastSeen: userStatusMap[userId.userId].lastSeen,
           };
 
       socket.emit("send_user_status", userStatus);
