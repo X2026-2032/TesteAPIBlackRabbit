@@ -1,7 +1,7 @@
+import { io } from "@/app";
 import { prisma } from "@/lib/prisma";
 import { FastifyRequest, FastifyReply } from "fastify";
 import jwt from "jsonwebtoken";
-
 
 // Interface para os dados do convite
 interface InvitePayload {
@@ -9,14 +9,17 @@ interface InvitePayload {
   receiverId: string;
 }
 
-
 // Enviar convite
 export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
   const { senderId, receiverId } = req.body as InvitePayload;
 
   try {
-    const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
-    const receiver = await prisma.graphicAccount.findUnique({ where: { id: receiverId } });
+    const sender = await prisma.graphicAccount.findUnique({
+      where: { id: senderId },
+    });
+    const receiver = await prisma.graphicAccount.findUnique({
+      where: { id: receiverId },
+    });
 
     if (!sender || !receiver) {
       return reply.status(404).send({ error: "Usuário não encontrado" });
@@ -47,7 +50,9 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
         data: { status: "PENDING", updated_at: new Date() },
       });
 
-      return reply.status(200).send({ message: "Convite reenviado com sucesso" });
+      return reply
+        .status(200)
+        .send({ message: "Convite reenviado com sucesso" });
     }
 
     // Criar um novo convite
@@ -66,6 +71,8 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
       publicKey: sender.publicKey, // Adicionando a chave pública
     };
 
+    io.emit("invite_sent", inviteData);
+
     return reply.status(200).send(inviteData);
   } catch (error) {
     console.error("Erro ao enviar convite:", error);
@@ -73,7 +80,10 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
   }
 };
 // Aceitar convite
-export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => {
+export const acceptInvite = async (
+  req: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { senderId, receiverId } = req.body as InvitePayload;
 
   try {
@@ -88,7 +98,9 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     });
 
     if (!invite) {
-      return reply.status(404).send({ error: "Convite não encontrado ou já processado" });
+      return reply
+        .status(404)
+        .send({ error: "Convite não encontrado ou já processado" });
     }
 
     // Atualiza o status do convite para aceito
@@ -111,7 +123,9 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     });
 
     if (!sender || !sender.publicKey) {
-      return reply.status(404).send({ error: "Chave pública do remetente não encontrada" });
+      return reply
+        .status(404)
+        .send({ error: "Chave pública do remetente não encontrada" });
     }
 
     // Retorna a resposta com o convite atualizado e a chave pública
@@ -126,9 +140,11 @@ export const acceptInvite = async (req: FastifyRequest, reply: FastifyReply) => 
   }
 };
 
-
 // Recusar convite
-export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => {
+export const rejectInvite = async (
+  req: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { senderId, receiverId } = req.body as InvitePayload;
 
   try {
@@ -142,7 +158,9 @@ export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     });
 
     if (!invite) {
-      return reply.status(404).send({ error: "Convite não encontrado ou já processado" });
+      return reply
+        .status(404)
+        .send({ error: "Convite não encontrado ou já processado" });
     }
 
     // Atualizar status do convite para recusado
@@ -157,7 +175,6 @@ export const rejectInvite = async (req: FastifyRequest, reply: FastifyReply) => 
     return reply.status(500).send({ error: "Erro ao recusar convite" });
   }
 };
-
 
 // Listar convites
 export const listInvites = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -177,18 +194,25 @@ export const listInvites = async (req: FastifyRequest, reply: FastifyReply) => {
     const token = authHeader.split(" ")[1];
     console.log("Token extraído:", token);
 
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET as string) as { sub: string };
+    const decodedToken = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string,
+    ) as { sub: string };
     userId = decodedToken.sub;
     console.log("User ID extraído do token:", userId);
 
     if (!userId) {
       console.log("Falha ao extrair o ID do usuário do token.");
-      return reply.status(400).send({ error: "Falha ao identificar o usuário" });
+      return reply
+        .status(400)
+        .send({ error: "Falha ao identificar o usuário" });
     }
 
     // Verificar se o usuário existe
     console.log("Verificando existência do usuário...");
-    const user = await prisma.graphicAccount.findUnique({ where: { id: userId } });
+    const user = await prisma.graphicAccount.findUnique({
+      where: { id: userId },
+    });
     console.log("Usuário encontrado:", user);
 
     if (!user) {
@@ -217,4 +241,4 @@ export const listInvites = async (req: FastifyRequest, reply: FastifyReply) => {
     console.error("Erro ao listar convites:", error);
     return reply.status(500).send({ error: "Erro ao listar convites" });
   }
-}
+};
