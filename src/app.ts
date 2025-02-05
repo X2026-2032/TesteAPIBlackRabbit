@@ -43,13 +43,9 @@ import { ContactsRoutes } from "./http/controllers/contacts/routes";
 //   createWebhooks();
 // }
 
-
-
 export const app = fastify({
   bodyLimit: 30000000, // + ou - 28MB
 });
-
-
 
 app.register(generated);
 
@@ -65,7 +61,7 @@ app.addHook("onRequest", async (request: FastifyRequest, reply) => {
 });
 
 export const io = new Server(app.server, {
-  cors: { origin: "*" },
+  cors: { origin: "*", methods: ["GET", "POST", "PATCH", "DELETE"] },
 });
 
 setupChatWebSocket(io);
@@ -99,13 +95,11 @@ app.register(MediaRoutes, { prefix: "media" });
 app.register(NotificationRoutes, { prefix: "notifications" });
 app.register(TicketRoutes, { prefix: "tickets" });
 app.register(DeviceRoutes);
-app.register(DeviceTokenRoutes); 
-app.register(MessageRoutes, { prefix: "messages" }); 
-app.register( GroupRoutes, { prefix: "group" });
+app.register(DeviceTokenRoutes);
+app.register(MessageRoutes, { prefix: "messages" });
+app.register(GroupRoutes, { prefix: "group" });
 app.register(InviteRoutes, { prefix: "invite" });
 app.register(ContactsRoutes, { prefix: "contacts" });
-
-
 
 app.setErrorHandler((error: any, _, reply) => {
   if (error instanceof ZodError) {
@@ -142,4 +136,3 @@ app
   .then(() => {
     console.log("🚀 HTTP Server Running!" + env.PORT);
   });
-
