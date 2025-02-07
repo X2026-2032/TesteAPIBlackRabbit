@@ -9,17 +9,14 @@ const mediaServices = new MediaServices();
 
 export async function getAllProfilePictures(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
-    console.log("[Controller] Iniciando `getAllProfilePictures`");
-
     const contacts = await prisma.contact.findMany({
       include: { graphicAccount: true },
     });
 
     if (!contacts || contacts.length === 0) {
-      console.log("[Controller] Nenhum contato encontrado.");
       return reply.status(404).send({ message: "No contacts found." });
     }
 
@@ -35,7 +32,6 @@ export async function getAllProfilePictures(
       const result = await mediaServices.list({ userId });
 
       if (!result.current) {
-        console.log(`[Controller] Nenhuma imagem encontrada para o usuário: ${userId}`);
         imagesArray.push({ userId, image: null });
         continue;
       }
@@ -43,22 +39,21 @@ export async function getAllProfilePictures(
       const imagePath = path.join(process.cwd(), "uploads", result.current); // Alterado para a raiz do projeto
 
       if (!fs.existsSync(imagePath)) {
-        console.log(`[Controller] Arquivo não encontrado: ${imagePath}`);
         imagesArray.push({ userId, image: null });
         continue;
       }
 
       // Converte a imagem para Base64 para envio no JSON
       const imageBuffer = fs.readFileSync(imagePath);
-      const base64Image = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+      const base64Image = `data:image/png;base64,${imageBuffer.toString(
+        "base64",
+      )}`;
 
       imagesArray.push({ userId, image: base64Image });
     }
 
     return reply.send({ images: imagesArray }); // Envia todas as imagens em um JSON
-
   } catch (error) {
-    console.error("[Controller] Erro capturado:", error);
     return reply.status(500).send({ message: "Internal server error." });
   }
 }
