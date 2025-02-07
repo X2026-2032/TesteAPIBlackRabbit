@@ -18,6 +18,7 @@ interface Message {
   authorId?: string;
   isOwn?: boolean | string;
   userId?: string;
+  isRead?: boolean;
 }
 
 interface Contact {
@@ -31,7 +32,8 @@ export function setupChatWebSocket(io: Server) {
   const contacts: Contact[] = [];
   const invites: { senderId: string; receiverId: string; status: string }[] =
     [];
-  const messageQueues: { [userId: string]: Message[] } = {};
+
+  const userMessageQueues: { [userId: string]: Message[] } = {};
 
   const groupMessageQueues: { [groupId: string]: Message[] } = {};
 
@@ -54,6 +56,14 @@ export function setupChatWebSocket(io: Server) {
         online: true,
         lastSeen: new Date().toISOString(),
       };
+
+      if (userMessageQueues[userId] && userMessageQueues[userId].length > 0) {
+        userMessageQueues[userId].forEach((message) => {
+          socket.emit("receive_message_pending", userId, message);
+        });
+
+        delete userMessageQueues[userId];
+      }
     });
 
     // Usuário desconectou
@@ -90,43 +100,226 @@ export function setupChatWebSocket(io: Server) {
       socket.to(chatId).emit("userTyping", { userId, isTyping });
     });
 
-    // Usuário enviou mensagem
-    socket.on("send_message", async (data) => {
-      try {
-        if (!validateFields(data, ["content", "senderId", "receiverId"])) {
-          throw new Error("Dados incompletos para criar a mensagem.");
+    socket.on("user_joined_private", (data) => {
+      const { userId, groupId } = data;
+
+      socket.join(groupId);
+
+      if (!userGroupsMap[groupId]) {
+        userGroupsMap[groupId] = [];
+      }
+
+      if (!userGroupsMap[groupId].includes(userId)) {
+        userGroupsMap[groupId].push(userId);
+      }
+    });
+
+    socket.on("user_left_private", (data) => {
+      const { userId, groupId } = data;
+
+      if (!userGroupsMap[groupId]) return;
+
+      userGroupsMap[groupId] = userGroupsMap[groupId].filter(
+        (id) => id !== userId,
+      );
+
+      socket.leave(groupId);
+
+      if (userGroupsMap[groupId].length === 0) {
+        delete userGroupsMap[groupId];
+      }
+    });
+
+    socket.on("user_get_pendent_messages_private", async (userId) => {
+      if (userMessageQueues[userId] && userMessageQueues[userId].length > 0) {
+        userMessageQueues[userId].forEach((message) => {
+          socket.emit("receive_message_individual_pendent", message);
+        });
+
+        delete userMessageQueues[userId];
+      }
+    });
+
+    socket.on("send_message_private", (data) => {
+      const {
+        content,
+        senderId,
+        receiverId,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        authorName,
+        action,
+        type,
+        chatId,
+        timestamp,
+        authorId,
+        id,
+        isOwn,
+        status,
+      } = data;
+
+      if (!content || !senderId || !receiverId) {
+        console.error("Dados incompletos para criar a mensagem");
+        return;
+      }
+
+      const message: Message = {
+        id,
+        authorId,
+        authorName,
+        action,
+        type,
+        chatId,
+        content,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        timestamp,
+        isOwn,
+        status,
+        senderId,
+        receiverId,
+        isRead: false,
+      };
+
+      console.log(
+        `Mensagem recebida de ${senderId} para o usuário ${receiverId}:`,
+        message,
+      );
+
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        io.to(receiverId).emit("receive_message_individual", message);
+      } else {
+        if (!userMessageQueues[receiverId]) {
+          userMessageQueues[receiverId] = [];
         }
 
-        const { content, senderId, receiverId, userId, ...rest } = data;
-        const message: Message = {
-          content,
-          senderId,
-          receiverId,
-          isOwn: senderId === userId ? true : false,
-          ...rest,
-        };
+        userMessageQueues[receiverId].push(message);
+      }
+    });
 
-        console.log(
-          `Mensagem recebida de ${senderId} para ${receiverId}:`,
-          message,
-        );
-        // Verifica se o destinatário está online
-        const isOnline = io.sockets.adapter.rooms.has(receiverId); // Verifica se o usuário está conectado
+    socket.on("user_joined_group", (data) => {
+      const { userId, groupId } = data;
 
-        if (isOnline) {
-          io.to(receiverId).emit("receive_message", message); // Envia para o destinatário
-          console.log("Mensagem enviada com sucesso.");
-        } else {
-          console.log(
-            `Destinatário ${receiverId} offline. Armazenando mensagem.`,
-          );
-          if (!messageQueues[receiverId]) {
-            messageQueues[receiverId] = [];
+      console.log(`Usuário ${userId} entrou no grupo ${groupId}`);
+
+      // Adicionar o usuário ao "room" do grupo
+      socket.join(groupId);
+
+      if (!userGroupsMap[groupId]) {
+        userGroupsMap[groupId] = [];
+      }
+
+      if (!userGroupsMap[groupId].includes(userId)) {
+        userGroupsMap[groupId].push(userId);
+      }
+
+      // Verificar se há mensagens pendentes para o grupo
+      if (
+        groupMessageQueues[groupId] &&
+        groupMessageQueues[groupId].length > 0
+      ) {
+        console.log(`Enviando mensagens pendentes para o grupo ${groupId}`);
+        groupMessageQueues[groupId].forEach((message) => {
+          io.to(groupId).emit("receive_group_message", message);
+        });
+
+        // Limpar a fila de mensagens do grupo
+        delete groupMessageQueues[groupId];
+      }
+    });
+
+    socket.on("send_group_message", (data) => {
+      const {
+        content,
+        senderId,
+        groupId,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        authorName,
+        action,
+        type,
+        chatId,
+        timestamp,
+        authorId,
+        id,
+        isOwn,
+        status,
+      } = data;
+
+      if (!content || !senderId || !groupId) {
+        console.error("Dados incompletos para criar a mensagem");
+        return;
+      }
+
+      const message: Message = {
+        id,
+        authorId,
+        authorName,
+        action,
+        type,
+        chatId,
+        content,
+        encryptedMessage,
+        encryptedKey,
+        iv,
+        timestamp,
+        isOwn,
+        status,
+        senderId,
+        receiverId: groupId,
+        isRead: false,
+      };
+
+      console.log(
+        `Mensagem recebida de ${senderId} para o grupo ${groupId}:`,
+        message,
+      );
+
+      const groupMembers = io.sockets.adapter.rooms.get(groupId);
+
+      if (groupMembers && groupMembers.size > 0) {
+        io.to(groupId).emit("receive_group_message", message);
+      } else {
+        if (!groupMessageQueues[groupId]) {
+          groupMessageQueues[groupId] = [];
+        }
+        groupMessageQueues[groupId].push(message);
+      }
+    });
+
+    socket.on("user_left_group", (data) => {
+      const { userId, groupId } = data;
+
+      if (!userGroupsMap[groupId]) return;
+
+      userGroupsMap[groupId] = userGroupsMap[groupId].filter(
+        (id) => id !== userId,
+      );
+
+      socket.leave(groupId);
+
+      if (userGroupsMap[groupId].length === 0) {
+        delete userGroupsMap[groupId];
+      }
+    });
+
+    socket.on("user_get_pendent_messages_group", async (userId) => {
+      if (userGroupsMap[userId]) {
+        userGroupsMap[userId].forEach((groupId) => {
+          if (
+            groupMessageQueues[groupId] &&
+            groupMessageQueues[groupId].length > 0
+          ) {
+            groupMessageQueues[groupId].forEach((message) => {
+              socket.emit("receive_group_message_pendent", message);
+            });
+
+            delete groupMessageQueues[groupId];
           }
-          messageQueues[receiverId].push(message); // Armazena na fila
-        }
-      } catch (error) {
-        handleError(socket, error as Error, "send_message");
+        });
       }
     });
 
@@ -257,132 +450,6 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
-    // Enviar mensagem em grupo
-    // Armazenamento em memória para mensagens pendentes de grupos
-
-    // Enviar mensagem para todos os membros de um grupo
-    socket.on("send_group_message", (data) => {
-      const {
-        content,
-        senderId,
-        groupId,
-        encryptedMessage,
-        encryptedKey,
-        iv,
-        authorName,
-        action,
-        type,
-        chatId,
-        timestamp,
-        authorId,
-        id,
-        isOwn,
-        status,
-      } = data;
-
-      if (!content || !senderId || !groupId) {
-        console.error("Dados incompletos para criar a mensagem");
-        return;
-      }
-
-      const message: Message = {
-        id,
-        authorId,
-        authorName,
-        action,
-        type,
-        chatId,
-        content,
-        encryptedMessage,
-        encryptedKey,
-        iv,
-        timestamp,
-        isOwn,
-        status,
-        senderId,
-        receiverId: groupId, // O "receiverId" é o ID do grupo, neste caso
-      };
-
-      console.log(
-        `Mensagem recebida de ${senderId} para o grupo ${groupId}:`,
-        message,
-      );
-
-      const connectedUsers = (userGroupsMap[groupId] || []).filter(
-        (userId) => userId !== senderId,
-      );
-
-      if (connectedUsers.length === 0) {
-      }
-
-      // Verificar se o grupo tem membros online
-      const groupMembers = io.sockets.adapter.rooms.get(groupId);
-
-      if (groupMembers && groupMembers.size > 0) {
-        // Emitir a mensagem para todos os membros online do grupo
-        io.to(groupId).emit("receive_group_message", message);
-        console.log(`Mensagem enviada para o grupo ${groupId}`);
-      } else {
-        // Se nenhum membro do grupo estiver online, armazenar a mensagem na fila
-        console.log(
-          `Nenhum membro online no grupo ${groupId}. Armazenando mensagem.`,
-        );
-        if (!groupMessageQueues[groupId]) {
-          groupMessageQueues[groupId] = [];
-        }
-        groupMessageQueues[groupId].push(message);
-      }
-    });
-
-    // Enviar mensagens pendentes quando um usuário entra em um grupo
-    socket.on("user_joined_group", (data) => {
-      const { userId, groupId } = data;
-
-      console.log(`Usuário ${userId} entrou no grupo ${groupId}`);
-
-      // Adicionar o usuário ao "room" do grupo
-      socket.join(groupId);
-
-      if (!userGroupsMap[groupId]) {
-        userGroupsMap[groupId] = [];
-      }
-
-      if (!userGroupsMap[groupId].includes(userId)) {
-        userGroupsMap[groupId].push(userId);
-      }
-
-      // Verificar se há mensagens pendentes para o grupo
-      if (
-        groupMessageQueues[groupId] &&
-        groupMessageQueues[groupId].length > 0
-      ) {
-        console.log(`Enviando mensagens pendentes para o grupo ${groupId}`);
-        groupMessageQueues[groupId].forEach((message) => {
-          io.to(groupId).emit("receive_group_message", message);
-        });
-
-        // Limpar a fila de mensagens do grupo
-        delete groupMessageQueues[groupId];
-      }
-    });
-
-    socket.on("user_left_group", (data) => {
-      const { userId, groupId } = data;
-
-      if (!userGroupsMap[groupId]) return;
-
-      userGroupsMap[groupId] = userGroupsMap[groupId].filter(
-        (id) => id !== userId,
-      );
-
-      socket.leave(groupId);
-
-      if (userGroupsMap[groupId].length === 0) {
-        delete userGroupsMap[groupId];
-      }
-    });
-
-    // Ouvindo notificações no front-end
     socket.on("new:notification", (notification) => {
       console.log("Nova notificação:", notification);
       // Aqui você pode exibir um modal ou uma notificação para o usuário
