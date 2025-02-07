@@ -56,14 +56,6 @@ export function setupChatWebSocket(io: Server) {
         online: true,
         lastSeen: new Date().toISOString(),
       };
-
-      if (userMessageQueues[userId] && userMessageQueues[userId].length > 0) {
-        userMessageQueues[userId].forEach((message) => {
-          socket.emit("receive_message_pending", userId, message);
-        });
-
-        delete userMessageQueues[userId];
-      }
     });
 
     // Usuário desconectou
@@ -131,12 +123,15 @@ export function setupChatWebSocket(io: Server) {
     });
 
     socket.on("user_get_pendent_messages_private", async (userId) => {
-      if (userMessageQueues[userId] && userMessageQueues[userId].length > 0) {
-        userMessageQueues[userId].forEach((message) => {
+      if (
+        userMessageQueues[userId.userId] &&
+        userMessageQueues[userId.userId].length > 0
+      ) {
+        userMessageQueues[userId.userId].forEach((message) => {
           socket.emit("receive_message_individual_pendent", message);
         });
 
-        delete userMessageQueues[userId];
+        delete userMessageQueues[userId.userId];
       }
     });
 
@@ -189,7 +184,7 @@ export function setupChatWebSocket(io: Server) {
       );
 
       if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
-        io.to(receiverId).emit("receive_message_individual", message);
+        io.to(chatId).emit("receive_message_individual", message);
       } else {
         if (!userMessageQueues[receiverId]) {
           userMessageQueues[receiverId] = [];
