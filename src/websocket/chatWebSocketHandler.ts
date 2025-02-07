@@ -48,6 +48,8 @@ export function setupChatWebSocket(io: Server) {
 
     // Usuário conectou
     socket.on("user_connected", async (userId) => {
+      socket.data.userId = userId;
+
       userStatusMap[userId] = {
         online: true,
         lastSeen: new Date().toISOString(),
@@ -56,11 +58,9 @@ export function setupChatWebSocket(io: Server) {
 
     // Usuário desconectou
     socket.on("disconnect", async () => {
-      const userId = Object.keys(userStatusMap).find(
-        (id) => userStatusMap[id].online,
-      );
+      const userId = socket.data.userId;
 
-      if (userId) {
+      if (userId && userStatusMap[userId]) {
         userStatusMap[userId].online = false;
         userStatusMap[userId].lastSeen = new Date().toISOString();
       }
@@ -82,6 +82,12 @@ export function setupChatWebSocket(io: Server) {
           };
 
       socket.emit("send_user_status", userStatus);
+    });
+
+    socket.on("userTyping", ({ chatId, isTyping, userId }) => {
+      if (!chatId || !userId) return;
+
+      socket.to(chatId).emit("userTyping", { userId, isTyping });
     });
 
     // Usuário enviou mensagem
