@@ -178,6 +178,10 @@ export function setupChatWebSocket(io: Server) {
         isRead: false,
       };
 
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        message.status = "delivered";
+      }
+
       console.log(
         `Mensagem recebida de ${senderId} para o usuário ${receiverId}:`,
         message,
@@ -274,6 +278,10 @@ export function setupChatWebSocket(io: Server) {
       );
 
       const groupMembers = io.sockets.adapter.rooms.get(groupId);
+
+      if (groupMembers && groupMembers.size > 0) {
+        message.status = "delivered";
+      }
 
       if (groupMembers && groupMembers.size > 0) {
         io.to(groupId).emit("receive_group_message", message);
