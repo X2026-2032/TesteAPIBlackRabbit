@@ -326,6 +326,69 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
+    socket.on("send_file", async (data) => {
+      try {
+        if (
+          !validateFields(data, [
+            "content",
+            "senderId",
+            "receiverId",
+            "subtitle",
+          ])
+        ) {
+          throw new Error("Dados incompletos para criar a mensagem.");
+        }
+
+        const {
+          content,
+          senderId,
+          receiverId,
+          groupId,
+          userId,
+          subtitle,
+          ...rest
+        } = data;
+
+        const message: Message = {
+          content,
+          senderId,
+          subtitle,
+          receiverId,
+          groupId,
+          isOwn: senderId === userId,
+          ...rest,
+        };
+
+        if (receiverId) {
+          if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+            io.to(receiverId).emit("receive_message_individual", message);
+          } else {
+            if (!userMessageQueues[receiverId]) {
+              userMessageQueues[receiverId] = [];
+            }
+
+            userMessageQueues[receiverId].push(message);
+          }
+        } else if (groupId) {
+          const groupMembers = io.sockets.adapter.rooms.get(groupId);
+
+          if (groupMembers && groupMembers.size > 0) {
+            io.to(groupId).emit("receive_group_message", message);
+          } else {
+            if (!groupMessageQueues[groupId]) {
+              groupMessageQueues[groupId] = [];
+            }
+
+            groupMessageQueues[groupId].push(message);
+          }
+        } else {
+          throw new Error("Destinatário ou grupo não especificado.");
+        }
+      } catch (error) {
+        handleError(socket, error as Error, "send_file");
+      }
+    });
+
     // Adicionar um contato
     socket.on("add_contact", (data) => {
       const { userId, contactId } = data;
