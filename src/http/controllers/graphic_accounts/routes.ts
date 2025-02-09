@@ -10,6 +10,7 @@ import { sendCodeEmail } from "./send-code-email";
 import { verifyEmail } from "./verifyEmail";
 import { getGraphicAccountByNumberIdentifier } from "./get-account-by-number-identifier";
 import { deleteUserByUserName } from "@/use-cases/graphic_accounts/delete-graphic_accounts";
+import { updatePublicKey } from "./updatePublickKey";
 
 export async function GraphicAccountsRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
@@ -20,6 +21,8 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
 
   app.get("/userName/:userName", fetchGraphicAccounts);
   
+  app.patch("/:userName/update-publickey", updatePublicKey);
+
   app.delete("/delete", {
     schema: {
       body: {
