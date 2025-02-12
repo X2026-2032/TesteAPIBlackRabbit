@@ -189,14 +189,32 @@ export function setupChatWebSocket(io: Server) {
         message,
       );
 
-      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+      const chatMembers = io.sockets.adapter.rooms.get(chatId);
+
+      if (
+        userStatusMap[receiverId] &&
+        userStatusMap[receiverId].online &&
+        chatMembers &&
+        chatMembers.size === 2
+      ) {
         io.to(chatId).emit("receive_message_individual", message);
       } else {
+        io.to(chatId).emit("receive_message_individual", message);
         if (!userMessageQueues[receiverId]) {
           userMessageQueues[receiverId] = [];
         }
 
         userMessageQueues[receiverId].push(message);
+      }
+
+      if (
+        userStatusMap[receiverId] &&
+        userStatusMap[receiverId].online &&
+        (!chatMembers || !chatMembers.has(receiverId))
+      ) {
+        io.to(receiverId).emit("receive_message_private_away", {
+          message,
+        });
       }
     });
 
