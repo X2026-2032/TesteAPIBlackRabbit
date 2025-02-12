@@ -56,6 +56,8 @@ export function setupChatWebSocket(io: Server) {
         online: true,
         lastSeen: new Date().toISOString(),
       };
+
+      socket.emit("send_user_status", userStatusMap);
     });
 
     // Usuário desconectou
@@ -326,66 +328,88 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
-    socket.on("send_file", async (data) => {
-      try {
-        if (
-          !validateFields(data, [
-            "content",
-            "senderId",
-            "receiverId",
-            "subtitle",
-          ])
-        ) {
-          throw new Error("Dados incompletos para criar a mensagem.");
+    socket.on("send_file_private", async (data) => {
+      if (
+        !validateFields(data, ["content", "senderId", "receiverId", "subtitle"])
+      ) {
+        throw new Error("Dados incompletos para criar a mensagem.");
+      }
+
+      const {
+        content,
+        senderId,
+        receiverId,
+        chatId,
+        userId,
+        subtitle,
+        ...rest
+      } = data;
+
+      const message: Message = {
+        content,
+        senderId,
+        subtitle,
+        receiverId,
+        chatId,
+        isOwn: senderId === userId,
+        ...rest,
+      };
+
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        message.status = "delivered";
+      }
+
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        io.to(chatId).emit("receive_message_individual", message);
+      } else {
+        if (!userMessageQueues[receiverId]) {
+          userMessageQueues[receiverId] = [];
         }
 
-        const {
-          content,
-          senderId,
-          receiverId,
-          groupId,
-          userId,
-          subtitle,
-          ...rest
-        } = data;
+        userMessageQueues[receiverId].push(message);
+      }
+    });
 
-        const message: Message = {
-          content,
-          senderId,
-          subtitle,
-          receiverId,
-          groupId,
-          isOwn: senderId === userId,
-          ...rest,
-        };
+    socket.on("send_file_group", async (data) => {
+      if (
+        !validateFields(data, ["content", "senderId", "receiverId", "subtitle"])
+      ) {
+        throw new Error("Dados incompletos para criar a mensagem.");
+      }
 
-        if (receiverId) {
-          if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
-            io.to(receiverId).emit("receive_message_individual", message);
-          } else {
-            if (!userMessageQueues[receiverId]) {
-              userMessageQueues[receiverId] = [];
-            }
+      const {
+        content,
+        senderId,
+        receiverId,
+        groupId,
+        userId,
+        subtitle,
+        ...rest
+      } = data;
 
-            userMessageQueues[receiverId].push(message);
-          }
-        } else if (groupId) {
-          const groupMembers = io.sockets.adapter.rooms.get(groupId);
+      const message: Message = {
+        content,
+        senderId,
+        subtitle,
+        receiverId,
+        groupId,
+        isOwn: senderId === userId,
+        ...rest,
+      };
 
-          if (groupMembers && groupMembers.size > 0) {
-            io.to(groupId).emit("receive_group_message", message);
-          } else {
-            if (!groupMessageQueues[groupId]) {
-              groupMessageQueues[groupId] = [];
-            }
+      const groupMembers = io.sockets.adapter.rooms.get(groupId);
 
-            groupMessageQueues[groupId].push(message);
-          }
-        } else {
-          throw new Error("Destinatário ou grupo não especificado.");
+      if (groupMembers && groupMembers.size > 0) {
+        message.status = "delivered";
+      }
+
+      if (groupMembers && groupMembers.size > 0) {
+        io.to(groupId).emit("receive_group_message", message);
+      } else {
+        if (!groupMessageQueues[groupId]) {
+          groupMessageQueues[groupId] = [];
         }
-      } catch (error) {
-        handleError(socket, error as Error, "send_file");
+        groupMessageQueues[groupId].push(message);
       }
     });
 
