@@ -203,6 +203,7 @@ export function setupChatWebSocket(io: Server) {
       ) {
         io.to(chatId).emit("receive_message_individual", message);
       } else {
+        io.to(chatId).emit("receive_message_individual", message);
         if (!userMessageQueues[receiverId]) {
           userMessageQueues[receiverId] = [];
         }
