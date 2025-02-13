@@ -37,6 +37,10 @@ export function setupChatWebSocket(io: Server) {
 
   const groupMessageQueues: { [groupId: string]: Message[] } = {};
 
+  const privateAudioQueues: { [userId: string]: Message[] } = {};
+
+  const groupAudioQueues: { [groupId: string]: Message[] } = {};
+
   const userGroupsMap: { [groupId: string]: string[] } = {};
 
   const userSocketMap: { [userId: string]: string } = {};
@@ -288,13 +292,14 @@ export function setupChatWebSocket(io: Server) {
 
       const groupMembers = io.sockets.adapter.rooms.get(groupId);
 
-      if (groupMembers && groupMembers.size > 0) {
+      if (groupMembers && groupMembers.size > 1) {
         message.status = "delivered";
       }
 
-      if (groupMembers && groupMembers.size > 0) {
+      if (groupMembers && groupMembers.size > 1) {
         io.to(groupId).emit("receive_group_message", message);
       } else {
+        io.to(groupId).emit("receive_group_message", message);
         if (!groupMessageQueues[groupId]) {
           groupMessageQueues[groupId] = [];
         }
@@ -417,6 +422,92 @@ export function setupChatWebSocket(io: Server) {
           groupMessageQueues[groupId] = [];
         }
         groupMessageQueues[groupId].push(message);
+      }
+    });
+
+    socket.on("send_audio_private", async (data) => {
+      const { id, audioBlob, senderId, receiverId, chatId } = data;
+      let status = "sent";
+
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        status = "delivered";
+      }
+
+      const message: Message = {
+        id,
+        senderId,
+        receiverId,
+        chatId,
+        content: audioBlob,
+        status,
+      };
+
+      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+        io.emit("receive_audio_private", message);
+      } else {
+        if (!privateAudioQueues[receiverId]) {
+          privateAudioQueues[receiverId] = [];
+        }
+
+        privateAudioQueues[receiverId].push(message);
+      }
+    });
+
+    socket.on("get_pendent_audios_private", async (userId) => {
+      if (
+        privateAudioQueues[userId.userId] &&
+        privateAudioQueues[userId.userId].length > 0
+      ) {
+        privateAudioQueues[userId.userId].forEach((message) => {
+          socket.emit("receive_pendent_audios_private", message);
+        });
+
+        delete privateAudioQueues[userId.userId];
+      }
+    });
+
+    socket.on("send_audio_group", async (data) => {
+      const { id, audioBlob, senderId, groupId } = data;
+
+      const message: Message = {
+        id,
+        senderId,
+        receiverId: groupId,
+        content: audioBlob,
+      };
+
+      const groupMembers = io.sockets.adapter.rooms.get(groupId);
+
+      if (groupMembers && groupMembers.size > 1) {
+        message.status = "delivered";
+      }
+
+      if (groupMembers && groupMembers.size > 1) {
+        io.emit("receive_audio_group", message);
+      } else {
+        io.emit("receive_audio_group", message);
+        if (!groupAudioQueues[groupId]) {
+          groupAudioQueues[groupId] = [];
+        }
+
+        groupAudioQueues[groupId].push(message);
+      }
+    });
+
+    socket.on("get_pendent_audios_group", async (userId) => {
+      if (userGroupsMap[userId]) {
+        userGroupsMap[userId].forEach((groupId) => {
+          if (
+            groupAudioQueues[groupId] &&
+            groupAudioQueues[groupId].length > 0
+          ) {
+            groupAudioQueues[groupId].forEach((message) => {
+              socket.emit("receive_pendent_audios_group", message);
+            });
+
+            delete groupAudioQueues[groupId];
+          }
+        });
       }
     });
 
