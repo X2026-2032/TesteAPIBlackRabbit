@@ -4,7 +4,9 @@ import fs from "fs";
 
 // Diretórios para armazenamento dos uploads
 const uploadDirUser = path.resolve(__dirname, "../../../uploads");
+console.log("📂 Diretório de upload de usuários:", uploadDirUser);
 const uploadDirGroup = path.resolve(__dirname, "../../../uploads-groups");
+console.log("📂 Diretório de upload de grupos:", uploadDirGroup);
 
 // Função para garantir que o diretório de upload exista
 function ensureDirectoryExists(directoryPath: string) {
