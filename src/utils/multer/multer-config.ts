@@ -1,56 +1,81 @@
 import multer from "fastify-multer";
 import path from "path";
 import fs from "fs";
-function processFileUpload(req: any, file: any, cb: any, uploadDir: string) {
-  const userId = req.params?.id;
-  if (!userId) {
-    return cb(new Error("ID do usuário/grupo não encontrado na URL."));
-  }
 
-  const fileExtension = path.extname(file.originalname).toLowerCase();
-  const fileNameWithoutExtension = `${userId}`;
-  const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+// Diretórios para armazenamento dos uploads
+const uploadDirUser = path.resolve(__dirname, "../../../uploads");
+const uploadDirGroup = path.resolve(__dirname, "../../../uploads-groups");
 
-  if (!allowedExtensions.includes(fileExtension)) {
-    return cb(new Error("Formato de arquivo não permitido."));
-  }
-
-  const directoryPath = path.join(__dirname, uploadDir);
-
-  // Verifica se o diretório existe, se não, cria
+// Função para garantir que o diretório de upload exista
+function ensureDirectoryExists(directoryPath: string) {
   if (!fs.existsSync(directoryPath)) {
     fs.mkdirSync(directoryPath, { recursive: true });
   }
+}
 
-  // Lê os arquivos do diretório e remove arquivos antigos
-  fs.readdir(directoryPath, (err, files) => {
-    if (err) {
-      return cb(err);
+async function processFileUpload(
+  req: any,
+  file: any,
+  cb: (error: Error | null, filename?: string) => void,
+  uploadDir: string,
+) {
+  try {
+    const userId = req.params?.id;
+    if (!userId) {
+      return cb(new Error("ID do usuário/grupo não encontrado na URL."));
     }
 
-    const filesToDelete = files.filter((file) =>
-      file.startsWith(fileNameWithoutExtension),
-    );
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    const fileNameWithoutExtension = `${userId}`;
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
-    filesToDelete.forEach((file) => {
-      const filePath = path.join(directoryPath, file);
-      fs.unlinkSync(filePath);
+    if (!allowedExtensions.includes(fileExtension)) {
+      return cb(new Error("Formato de arquivo não permitido."));
+    }
+
+    const directoryPath = path.resolve(__dirname, uploadDir);
+    ensureDirectoryExists(directoryPath);
+
+    fs.readdir(directoryPath, (err, files) => {
+      if (err) {
+        return cb(err);
+      }
+
+      const filesToDelete = files.filter((file) =>
+        file.startsWith(fileNameWithoutExtension),
+      );
+
+      filesToDelete.forEach((file) => {
+        const filePath = path.join(directoryPath, file);
+        try {
+          fs.unlinkSync(filePath);
+        } catch (unlinkErr) {
+          console.error("Erro ao excluir arquivo antigo:", unlinkErr);
+        }
+      });
+
+      const finalFileName = `${fileNameWithoutExtension}${fileExtension}`;
+      cb(null, finalFileName);
     });
-
-    const finalFileName = `${fileNameWithoutExtension}${fileExtension}`;
-
-    cb(null, finalFileName);
-  });
+  } catch (error) {
+    cb(error as Error);
+  }
 }
 
 const storageUser = multer.diskStorage({
-  destination: path.join(__dirname, "../../../uploads"),
+  destination: (req, file, cb) => {
+    ensureDirectoryExists(uploadDirUser);
+    cb(null, uploadDirUser);
+  },
   filename: (req, file, cb) =>
     processFileUpload(req, file, cb, "../../../uploads"),
 });
 
 const storageGroup = multer.diskStorage({
-  destination: path.join(__dirname, "../../../uploads-groups"),
+  destination: (req, file, cb) => {
+    ensureDirectoryExists(uploadDirGroup);
+    cb(null, uploadDirGroup);
+  },
   filename: (req, file, cb) =>
     processFileUpload(req, file, cb, "../../../uploads-groups"),
 });
