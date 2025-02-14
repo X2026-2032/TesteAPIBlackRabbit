@@ -56,6 +56,8 @@ export function setupChatWebSocket(io: Server) {
     socket.on("user_connected", async (userId) => {
       socket.data.userId = userId;
 
+      socket.join(userId);
+
       userStatusMap[userId] = {
         online: true,
         lastSeen: new Date().toISOString(),
@@ -217,7 +219,6 @@ export function setupChatWebSocket(io: Server) {
 
       console.log(`Usuário ${userId} entrou no grupo ${groupId}`);
 
-      // Adicionar o usuário ao "room" do grupo
       socket.join(groupId);
 
       if (!userGroupsMap[groupId]) {
@@ -226,20 +227,6 @@ export function setupChatWebSocket(io: Server) {
 
       if (!userGroupsMap[groupId].includes(userId)) {
         userGroupsMap[groupId].push(userId);
-      }
-
-      // Verificar se há mensagens pendentes para o grupo
-      if (
-        groupMessageQueues[groupId] &&
-        groupMessageQueues[groupId].length > 0
-      ) {
-        console.log(`Enviando mensagens pendentes para o grupo ${groupId}`);
-        groupMessageQueues[groupId].forEach((message) => {
-          io.to(groupId).emit("receive_group_message", message);
-        });
-
-        // Limpar a fila de mensagens do grupo
-        delete groupMessageQueues[groupId];
       }
     });
 
@@ -324,20 +311,18 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
-    socket.on("user_get_pendent_messages_group", async (userId) => {
-      if (userGroupsMap[userId]) {
-        userGroupsMap[userId].forEach((groupId) => {
-          if (
-            groupMessageQueues[groupId] &&
-            groupMessageQueues[groupId].length > 0
-          ) {
-            groupMessageQueues[groupId].forEach((message) => {
-              socket.emit("receive_group_message_pendent", message);
-            });
+    socket.on("user_get_pendent_messages_group", async (data) => {
+      const { groupId, userId } = data;
 
-            delete groupMessageQueues[groupId];
-          }
+      if (
+        groupMessageQueues[groupId] &&
+        groupMessageQueues[groupId].length > 0
+      ) {
+        groupMessageQueues[groupId].forEach((message) => {
+          io.to(userId).emit("receive_group_message_pendent", message);
         });
+
+        delete groupMessageQueues[groupId];
       }
     });
 
@@ -372,9 +357,17 @@ export function setupChatWebSocket(io: Server) {
         message.status = "delivered";
       }
 
-      if (userStatusMap[receiverId] && userStatusMap[receiverId].online) {
+      const chatMembers = io.sockets.adapter.rooms.get(chatId);
+
+      if (
+        userStatusMap[receiverId] &&
+        userStatusMap[receiverId].online &&
+        chatMembers &&
+        chatMembers.size === 2
+      ) {
         io.to(chatId).emit("receive_message_individual", message);
       } else {
+        io.to(chatId).emit("receive_message_individual", message);
         if (!userMessageQueues[receiverId]) {
           userMessageQueues[receiverId] = [];
         }
@@ -412,13 +405,14 @@ export function setupChatWebSocket(io: Server) {
 
       const groupMembers = io.sockets.adapter.rooms.get(groupId);
 
-      if (groupMembers && groupMembers.size > 0) {
+      if (groupMembers && groupMembers.size > 1) {
         message.status = "delivered";
       }
 
-      if (groupMembers && groupMembers.size > 0) {
+      if (groupMembers && groupMembers.size > 1) {
         io.to(groupId).emit("receive_group_message", message);
       } else {
+        io.to(groupId).emit("receive_group_message", message);
         if (!groupMessageQueues[groupId]) {
           groupMessageQueues[groupId] = [];
         }
@@ -495,19 +489,28 @@ export function setupChatWebSocket(io: Server) {
       }
     });
 
-    socket.on("get_pendent_audios_group", async (userId) => {
-      if (userGroupsMap[userId]) {
-        userGroupsMap[userId].forEach((groupId) => {
-          if (
-            groupAudioQueues[groupId] &&
-            groupAudioQueues[groupId].length > 0
-          ) {
-            groupAudioQueues[groupId].forEach((message) => {
-              socket.emit("receive_pendent_audios_group", message);
-            });
+    socket.on("get_pendent_audios_group", async (data) => {
+      const { userId, groupId } = data;
 
-            delete groupAudioQueues[groupId];
-          }
+      if (groupAudioQueues[groupId] && groupAudioQueues[groupId].length > 0) {
+        groupAudioQueues[groupId].forEach((message) => {
+          io.to(userId).emit("receive_pendent_audios_group", message);
+        });
+
+        delete groupAudioQueues[groupId];
+      }
+    });
+
+    socket.on("update_message_status", async (data) => {
+      const { messages } = data;
+
+      if (messages.length > 0) {
+        messages.forEach((message: Message) => {
+          message.status = "seen";
+          io.to(message.receiverId).emit(
+            "update_message_status_sender",
+            message,
+          );
         });
       }
     });
