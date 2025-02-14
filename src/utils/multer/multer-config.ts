@@ -2,13 +2,14 @@ import multer from "fastify-multer";
 import path from "path";
 import fs from "fs";
 
-// Diretórios para armazenamento dos uploads
+// Diretórios para armazenamento
 const uploadDirUser = path.resolve(__dirname, "../../../uploads");
-console.log("📂 Diretório de upload de usuários:", uploadDirUser);
 const uploadDirGroup = path.resolve(__dirname, "../../../uploads-groups");
+
+console.log("📂 Diretório de upload de usuários:", uploadDirUser);
 console.log("📂 Diretório de upload de grupos:", uploadDirGroup);
 
-// Função para garantir que o diretório de upload exista
+// Função para garantir que o diretório exista
 function ensureDirectoryExists(directoryPath: string) {
   try {
     if (!fs.existsSync(directoryPath)) {
@@ -26,7 +27,7 @@ function ensureDirectoryExists(directoryPath: string) {
   }
 }
 
-// Função para processar o upload do arquivo
+// Função para processar o upload
 async function processFileUpload(
   req: any,
   file: any,
@@ -40,10 +41,9 @@ async function processFileUpload(
       return cb(new Error("ID do usuário/grupo não encontrado na URL."));
     }
 
-    console.log(`📌 Processando upload para o usuário/grupo: ${userId}`);
+    console.log(`📌 Processando upload para: ${userId}`);
 
     const fileExtension = path.extname(file.originalname).toLowerCase();
-    const fileNameWithoutExtension = `${userId}`;
     const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
     if (!allowedExtensions.includes(fileExtension)) {
@@ -51,56 +51,44 @@ async function processFileUpload(
       return cb(new Error("Formato de arquivo não permitido."));
     }
 
-    const directoryPath = path.resolve(__dirname, uploadDir);
-    ensureDirectoryExists(directoryPath); // Garante que o diretório exista
+    const directoryPath = uploadDir;
+    ensureDirectoryExists(directoryPath);
 
-    console.log(`📂 Diretório de upload resolvido: ${directoryPath}`);
+    console.log(`📂 Diretório resolvido: ${directoryPath}`);
 
-    // Verificando se a pasta de destino existe e tem permissão de escrita
-    fs.access(directoryPath, fs.constants.W_OK, (err) => {
-      if (err) {
-        console.error(
-          `❌ Sem permissão para escrever no diretório: ${directoryPath}`,
-        );
-        return cb(
-          new Error("Sem permissão para escrever no diretório de upload."),
-        );
-      }
-    });
+    // Garantir permissões de escrita
+    try {
+      await fs.promises.access(directoryPath, fs.constants.W_OK);
+    } catch (err) {
+      console.error(`❌ Sem permissão para escrever em ${directoryPath}`);
+      return cb(new Error("Sem permissão para escrever no diretório."));
+    }
 
-    // Removendo arquivos antigos de forma assíncrona
-    console.log(
-      `🔍 Verificando arquivos antigos no diretório ${directoryPath}...`,
+    // Remover arquivos antigos
+    console.log(`🔍 Limpando arquivos antigos em ${directoryPath}...`);
+    const files = await fs.promises.readdir(directoryPath);
+    const userFilePrefix = `${userId}`;
+
+    await Promise.all(
+      files
+        .filter((file) => file.startsWith(userFilePrefix))
+        .map(async (file) => {
+          const filePath = path.join(directoryPath, file);
+          try {
+            await fs.promises.unlink(filePath);
+            console.log(`🗑 Arquivo removido: ${filePath}`);
+          } catch (unlinkErr) {
+            console.error("❌ Erro ao excluir arquivo antigo:", unlinkErr);
+          }
+        }),
     );
-    fs.readdir(directoryPath, (err, files) => {
-      if (err) {
-        console.error("❌ Erro ao ler diretório:", err);
-        return cb(err);
-      }
 
-      const filesToDelete = files.filter((file) =>
-        file.startsWith(fileNameWithoutExtension),
-      );
+    const finalFileName = `${userId}${fileExtension}`;
+    console.log(`✅ Nome do novo arquivo: ${finalFileName}`);
 
-      console.log(`🗑 Arquivos a serem removidos: ${filesToDelete.join(", ")}`);
-
-      filesToDelete.forEach((file) => {
-        const filePath = path.join(directoryPath, file);
-        try {
-          fs.unlinkSync(filePath);
-          console.log(`✅ Arquivo removido: ${filePath}`);
-        } catch (unlinkErr) {
-          console.error("❌ Erro ao excluir arquivo antigo:", unlinkErr);
-        }
-      });
-
-      const finalFileName = `${fileNameWithoutExtension}${fileExtension}`;
-      console.log(`✅ Novo nome de arquivo gerado: ${finalFileName}`);
-
-      cb(null, finalFileName);
-    });
+    cb(null, finalFileName);
   } catch (error) {
-    console.error("❌ Erro inesperado em processFileUpload:", error);
+    console.error("❌ Erro inesperado:", error);
     cb(error as Error);
   }
 }
@@ -112,8 +100,7 @@ const storageUser = multer.diskStorage({
     ensureDirectoryExists(uploadDirUser);
     cb(null, uploadDirUser);
   },
-  filename: (req, file, cb) =>
-    processFileUpload(req, file, cb, "../../../uploads"),
+  filename: (req, file, cb) => processFileUpload(req, file, cb, uploadDirUser),
 });
 
 // Configuração do `multer` para grupos
@@ -123,11 +110,10 @@ const storageGroup = multer.diskStorage({
     ensureDirectoryExists(uploadDirGroup);
     cb(null, uploadDirGroup);
   },
-  filename: (req, file, cb) =>
-    processFileUpload(req, file, cb, "../../../uploads-groups"),
+  filename: (req, file, cb) => processFileUpload(req, file, cb, uploadDirGroup),
 });
 
-// Middleware do `multer`
+// Middleware `multer`
 export const uploadUser = multer({
   storage: storageUser,
   limits: { fileSize: 10 * 1024 * 1024 },
