@@ -6,8 +6,6 @@ import { getAllGroupsProfilePictures } from "./get-all-group-profile-picture-con
 import { getGroupProfilePicture } from "./get-group-profile-picture";
 import { uploadGroup, uploadUser } from "@/utils/multer/multer-config";
 import { prisma } from "@/lib/prisma";
-import fs from "fs";
-import path from "path";
 
 export async function MediaRoutes(app: FastifyInstance) {
   // app.addHook("onRequest", verifyJwt);
@@ -20,20 +18,22 @@ export async function MediaRoutes(app: FastifyInstance) {
   // Rota para atualizar a imagem do perfil do usuário
 
   app.post(
-    "/update-profile-picture/:id",
-    { preHandler: uploadUser.single("file") },
+    "/update-profile-picture",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { id } = request.params as { id: string };
+        const { userId, avatarLink } = request.body as {
+          userId: string;
+          avatarLink: string;
+        };
 
-        if (!id) {
+        if (!userId) {
           return reply
             .status(400)
             .send({ message: "ID do usuário não informado." });
         }
 
         const userExists = await prisma.graphicAccount.findUnique({
-          where: { id: id },
+          where: { id: userId },
         });
 
         if (!userExists) {
@@ -42,32 +42,18 @@ export async function MediaRoutes(app: FastifyInstance) {
             .send({ message: "ID do usuário não encontrado." });
         }
 
-        console.log("Request file:", request.file);
-
-        if (!request.file) {
-          return reply.status(400).send({ message: "Nenhum arquivo enviado." });
-        }
-
-        const uploadDirUser = path.resolve(__dirname, "../../../uploads");
-
-        const filePath = path.join(uploadDirUser, request.file.filename);
-
-        // Verifica se o arquivo foi salvo
-        if (!fs.existsSync(filePath)) {
-          console.error("❌ Arquivo não foi salvo:", filePath);
+        if (!avatarLink) {
           return reply
-            .status(500)
-            .send({ message: "Erro ao salvar o arquivo." });
+            .status(400)
+            .send({ message: "Link da imagem de perfil obrigatório." });
         }
 
-        console.log(
-          `✅ Imagem de perfil do usuário ${userExists.id} atualizada para ${filePath}`,
-        );
-
-        return reply.send({
-          message: "Imagem de perfil atualizada com sucesso!",
-          filePath,
+        await prisma.graphicAccount.update({
+          where: { id: userId },
+          data: { avatarLink },
         });
+
+        return reply.status(204).send();
       } catch (error) {
         console.error("Erro ao atualizar avatar:", error);
         return reply
@@ -86,15 +72,37 @@ export async function MediaRoutes(app: FastifyInstance) {
   // Rota para atualizar a imagem do perfil do grupo
   app.post(
     "/update-group-profile-picture/:id",
-    { preHandler: uploadGroup.single("file") },
-    async (request, reply) => {
-      if (!request.file) {
-        return reply.status(400).send({ message: "Nenhum arquivo enviado." });
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const { userId, avatarLink } = request.body as {
+          userId: string;
+          avatarLink: string;
+        };
+
+        if (!userId) {
+          return reply
+            .status(400)
+            .send({ message: "ID do usuário não informado." });
+        }
+
+        if (!avatarLink) {
+          return reply
+            .status(400)
+            .send({ message: "Link da imagem de perfil obrigatório." });
+        }
+
+        await prisma.group.update({
+          where: { id: userId },
+          data: { groupAvatarLink: avatarLink },
+        });
+
+        return reply.status(204).send();
+      } catch (error) {
+        console.error("Erro ao atualizar avatar do grupo:", error);
+        return reply
+          .status(500)
+          .send({ message: "Erro interno ao processar a imagem do grupo." });
       }
-      return reply.send({
-        message: "Imagem de perfil do grupo atualizada com sucesso!",
-        filePath: `/uploads-groups/${request.file.filename}`,
-      });
     },
   );
 }

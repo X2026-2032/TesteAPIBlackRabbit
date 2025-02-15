@@ -12,47 +12,22 @@ export async function getAllProfilePictures(
   reply: FastifyReply,
 ) {
   try {
+    const { id } = request.params as { id: string };
+
+    if (!id) {
+      return reply.status(400).send({ message: "User ID is required." });
+    }
+
     const contacts = await prisma.contact.findMany({
+      where: { graphicAccountId: id },
       include: { graphicAccount: true },
     });
 
-    if (!contacts || contacts.length === 0) {
-      return reply.status(404).send({ message: "No contacts found." });
-    }
+    const avatarLinks = contacts.map(
+      (contact) => contact.graphicAccount.avatarLink,
+    );
 
-    // Remover IDs duplicados
-    const uniqueContactIds = [
-      ...new Set(contacts.map((contact: Contact) => contact.graphicAccountId)),
-    ];
-
-    // Criar um array para armazenar todas as imagens
-    const imagesArray: { userId: string; image: string | null }[] = [];
-
-    for (const userId of uniqueContactIds) {
-      const result = await mediaServices.list({ userId });
-
-      if (!result.current) {
-        imagesArray.push({ userId, image: null });
-        continue;
-      }
-
-      const imagePath = path.join(process.cwd(), "uploads", result.current); // Alterado para a raiz do projeto
-
-      if (!fs.existsSync(imagePath)) {
-        imagesArray.push({ userId, image: null });
-        continue;
-      }
-
-      // Converte a imagem para Base64 para envio no JSON
-      const imageBuffer = fs.readFileSync(imagePath);
-      const base64Image = `data:image/png;base64,${imageBuffer.toString(
-        "base64",
-      )}`;
-
-      imagesArray.push({ userId, image: base64Image });
-    }
-
-    return reply.send({ images: imagesArray }); // Envia todas as imagens em um JSON
+    return reply.send(avatarLinks);
   } catch (error) {
     return reply.status(500).send({ message: "Internal server error." });
   }

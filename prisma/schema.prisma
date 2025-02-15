@@ -10,81 +10,79 @@ datasource db {
 }
 
 model User {
-  id                        String                      @id @default(uuid())
-  name                      String
-  document                  String                      @unique
-  email                     String                      @unique
-  role                      Role                        @default(MASTER)
-  status                    String
-  created_at                DateTime                    @default(now())
-  updated_at                DateTime                    @updatedAt
-  access_token              String?
-  refId                     String?
-  type                      Type                        @default(ADM)
-  password                  String?
-  api_key                   String?
-  AuthToken                 AuthToken[]
-  Pictures                  Pictures[]
+  id           String      @id @default(uuid())
+  name         String
+  document     String      @unique
+  email        String      @unique
+  role         Role        @default(MASTER)
+  status       String
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  access_token String?
+  refId        String?
+  type         Type        @default(ADM)
+  password     String?
+  api_key      String?
+  AuthToken    AuthToken[]
+  Pictures     Pictures[]
 
   @@map("users")
 }
 
-
 model GraphicAccount {
-  id                         String                      @id @default(uuid())
-  name                       String?
-  userName                   String?                      @unique
-  hardPassword               String?   
-  password_hash              String?
-  status                     String?
-  created_at                 DateTime                    @default(now())
-  updated_at                 DateTime                    @updatedAt
-  publicKey       String?          // Chave pública para E2EE
-  access_token               String?
-  blocked                    Boolean                     @default(false)
-  isOnline                   Boolean                     @default(false)
-  counter                    Int                         @default(0)
-  role                       Role                        @default(USER)
-  lastSeen                   DateTime?                   // Última atividade
-  AuthToken                  AuthToken[]
-  Notifications              Notifications[]
-  Pictures                   Pictures[]
-  groupMembers   GroupMember[]  @relation("GraphicAccountToGroupMember")
-  sentMessages PrivateMessage[] @relation("Sender")
+  id               String           @id @default(uuid())
+  name             String?
+  userName         String?          @unique
+  hardPassword     String?
+  password_hash    String?
+  status           String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  publicKey        String? // Chave pública para E2EE
+  access_token     String?
+  blocked          Boolean          @default(false)
+  isOnline         Boolean          @default(false)
+  counter          Int              @default(0)
+  role             Role             @default(USER)
+  avatarLink       String?
+  lastSeen         DateTime? // Última atividade
+  AuthToken        AuthToken[]
+  Notifications    Notifications[]
+  Pictures         Pictures[]
+  groupMembers     GroupMember[]    @relation("GraphicAccountToGroupMember")
+  sentMessages     PrivateMessage[] @relation("Sender")
   receivedMessages PrivateMessage[] @relation("Receiver")
   // Adicionar este campo de relação oposto
- // Adiciona a relação oposta para o owner no modelo Group
-  ownedGroups                Group[]                     @relation("GroupOwner")
-  messages                   GroupMessage[]   @relation("MessageSender") // Relação com mensagens de grupo
+  // Adiciona a relação oposta para o owner no modelo Group
+  ownedGroups      Group[]          @relation("GroupOwner")
+  messages         GroupMessage[]   @relation("MessageSender") // Relação com mensagens de grupo
 
+  contacts Contact[] // Lista de contatos (muitos-para-muitos)
 
-  contacts                   Contact[]                   // Lista de contatos (muitos-para-muitos)
+  contactsAsContact    Contact[]        @relation("ContactRelation")
+  audioCallsAsCaller   AudioVideoCall[] @relation("AudioCallCaller")
+  audioCallsAsReceiver AudioVideoCall[] @relation("AudioCallReceiver")
 
-contactsAsContact         Contact[]                   @relation("ContactRelation")
-  audioCallsAsCaller         AudioVideoCall[]            @relation("AudioCallCaller")
-  audioCallsAsReceiver       AudioVideoCall[]            @relation("AudioCallReceiver")
-
- invitesSent    Invite[] @relation("SentInvites")
+  invitesSent     Invite[] @relation("SentInvites")
   invitesReceived Invite[] @relation("ReceivedInvites")
 
-   // Relacionamento com a nova entidade
-  userMetadata      UserMetadata?
-  
+  // Relacionamento com a nova entidade
+  userMetadata UserMetadata?
+
   @@map("graphic_accounts")
 }
 
 model UserMetadata {
-  id         String           @id @default(uuid())
-  refId      String           @unique
-  lastSeen   DateTime?        // Última atividade do usuário
-  data       Json             // Dados adicionais armazenados em JSONB para maior flexibilidade
+  id       String    @id @default(uuid())
+  refId    String    @unique
+  lastSeen DateTime? // Última atividade do usuário
+  data     Json // Dados adicionais armazenados em JSONB para maior flexibilidade
 
   // Relacionamento reverso
-  account    GraphicAccount   @relation(fields: [refId], references: [id])
+  account GraphicAccount @relation(fields: [refId], references: [id])
 
   @@map("user_metadata")
 }
-
 
 model AccountToken {
   access_token String
@@ -94,19 +92,18 @@ model AccountToken {
   @@map("accounts_token")
 }
 
-
 model Operatos {
-  id            String          @id @default(uuid())
-  name          String
-  userName      String?         @unique
-  password      String? 
-  hardPassword      String?         
-  role          Role            @default(USER)
-  status        String          
-  access_token  String?
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  type          Type            @default(OPERATOR)
+  id           String   @id @default(uuid())
+  name         String
+  userName     String?  @unique
+  password     String?
+  hardPassword String?
+  role         Role     @default(USER)
+  status       String
+  access_token String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  type         Type     @default(OPERATOR)
 
   @@map("operators")
 }
@@ -139,8 +136,8 @@ model Notifications {
   updated_at       DateTime        @updatedAt
   deleted_at       DateTime?
   GraphicAccount   GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
-  userId      String
-  content     String
+  userId           String
+  content          String
 
   @@map("notifications")
 }
@@ -224,7 +221,6 @@ enum Role {
   MANAGER
 }
 
-
 enum Type {
   NATURAL
   LEGAL
@@ -233,7 +229,6 @@ enum Type {
   OPERATOR
   ADM
 }
-
 
 enum TicketStatus {
   WAITING
@@ -244,40 +239,41 @@ enum TicketStatus {
 ////////////////// aqui a relacao de usuarios e grupos //////////////
 
 model Group {
-  id               String          @id @default(uuid())
-  name             String
-  description      String?
-  ownerId          String          // Relacionamento com GraphicAccount
-  ownerUserName    String?
-  created_at       DateTime        @default(now())
-  updated_at       DateTime        @updatedAt
-  members          GroupMember[]  // Relacionamento com membros do grupo
-  isOwner          Boolean?  @default(true)  // Adiciona este campo para identificar o dono do grupo
- owner            GraphicAccount  @relation("GroupOwner", fields: [ownerId], references: [id]) // Relacionamento com GraphicAccount via id
+  id              String         @id @default(uuid())
+  name            String
+  description     String?
+  ownerId         String // Relacionamento com GraphicAccount
+  ownerUserName   String?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  groupAvatarLink String?
+  members         GroupMember[] // Relacionamento com membros do grupo
+  isOwner         Boolean?       @default(true) // Adiciona este campo para identificar o dono do grupo
+  owner           GraphicAccount @relation("GroupOwner", fields: [ownerId], references: [id]) // Relacionamento com GraphicAccount via id
 
- // Adicionar este campo de relação oposto
-  messages   GroupMessage[]  @relation("GroupToMessages")
+  // Adicionar este campo de relação oposto
+  messages GroupMessage[] @relation("GroupToMessages")
 
-//    messages         GroupMessage[]  // Relacionamento com mensagens
+  //    messages         GroupMessage[]  // Relacionamento com mensagens
 
   @@map("groups")
 }
 
 model GroupMember {
-  id                        String          @id @default(uuid())
-  groupId                   String
-  graphicAccountId          String
-  isBlocked                 Boolean         @default(false)
-  invited                   Boolean         @default(true) // Se o convite foi aceito
-  inviteStatus              InviteStatus    @default(PENDING) // Status do convite
-  group                     Group           @relation(fields: [groupId], references: [id])
- // graphicAccount            GraphicAccount  @relation("GroupMemberToGraphicAccount", fields: [graphicAccountId], references: [id])
-  ownerPublicKey           String?          //chave publica do grupo a mesma do gestor
-  groupMembers             GraphicAccount[] @relation("GraphicAccountToGroupMember") // Adicionando a relação oposta
-  isOwner         Boolean  @default(false)  // Adiciona este campo para identificar o dono do grupo
- type                      String?             @default("GROUP")
- created_at      DateTime?        @default(now())
- updated_at     DateTime?      @updatedAt
+  id               String           @id @default(uuid())
+  groupId          String
+  graphicAccountId String
+  isBlocked        Boolean          @default(false)
+  invited          Boolean          @default(true) // Se o convite foi aceito
+  inviteStatus     InviteStatus     @default(PENDING) // Status do convite
+  group            Group            @relation(fields: [groupId], references: [id])
+  // graphicAccount            GraphicAccount  @relation("GroupMemberToGraphicAccount", fields: [graphicAccountId], references: [id])
+  ownerPublicKey   String? //chave publica do grupo a mesma do gestor
+  groupMembers     GraphicAccount[] @relation("GraphicAccountToGroupMember") // Adicionando a relação oposta
+  isOwner          Boolean          @default(false) // Adiciona este campo para identificar o dono do grupo
+  type             String?          @default("GROUP")
+  created_at       DateTime?        @default(now())
+  updated_at       DateTime?        @updatedAt
 
   // Relação oposta no modelo GraphicAccount
   //graphicAccounts  GraphicAccount[] @relation("GroupMemberToGraphicAccount")
@@ -285,60 +281,52 @@ model GroupMember {
   @@map("group_members")
 }
 
-
 model PrivateMessage {
-  id               String          @id @default(uuid())
-  senderId         String
-  receiverId       String
-  content          Json            // Conteúdo da mensagem (armazenado como JSONB no PostgreSQL)
-  isRead           Boolean         @default(false)
-  createdAt        DateTime        @default(now())
-  sender           GraphicAccount  @relation("Sender", fields: [senderId], references: [id])
-  receiver         GraphicAccount  @relation("Receiver", fields: [receiverId], references: [id])
+  id         String         @id @default(uuid())
+  senderId   String
+  receiverId String
+  content    Json // Conteúdo da mensagem (armazenado como JSONB no PostgreSQL)
+  isRead     Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  sender     GraphicAccount @relation("Sender", fields: [senderId], references: [id])
+  receiver   GraphicAccount @relation("Receiver", fields: [receiverId], references: [id])
 
-
-  type       String   // Texto, Imagem, Vídeo, Áudio
-  mediaUrl   String?
-  updatedAt  DateTime @updatedAt
-
+  type      String // Texto, Imagem, Vídeo, Áudio
+  mediaUrl  String?
+  updatedAt DateTime @updatedAt
 
   @@map("private_messages")
 }
 
 ///////////////////
 model GroupMessage {
+  type      String // Texto, Imagem, Vídeo, Áudio
+  mediaUrl  String?
+  pinned    Boolean  @default(false)
+  updatedAt DateTime @updatedAt
 
+  reactions MessageReaction[]
 
+  id        String   @id @default(uuid())
+  groupId   String
+  senderId  String
+  content   Json
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 
-
-  type       String   // Texto, Imagem, Vídeo, Áudio
-  mediaUrl   String?
-  pinned     Boolean  @default(false)
-  updatedAt  DateTime @updatedAt
-  
-  reactions  MessageReaction[]
-
-  id               String          @id @default(uuid())
-  groupId          String
-  senderId         String
-  content          Json
-  isRead           Boolean         @default(false)
-  createdAt        DateTime        @default(now())
-
-//group      Group    @relation(fields: [groupId], references: [id])
+  //group      Group    @relation(fields: [groupId], references: [id])
   // Relacionamentos
-  sender           GraphicAccount  @relation("MessageSender", fields: [senderId], references: [id]) // Relação com o sender
-  group            Group           @relation("GroupToMessages", fields: [groupId], references: [id]) // Relacionamento com Group
+  sender GraphicAccount @relation("MessageSender", fields: [senderId], references: [id]) // Relação com o sender
+  group  Group          @relation("GroupToMessages", fields: [groupId], references: [id]) // Relacionamento com Group
 
-@@map("group_messages")
+  @@map("group_messages")
 }
-
 
 model Status {
   id        String   @id @default(uuid())
   userId    String
-  content   String   // Texto ou link para mídia
-  type      String   // Texto, Imagem, Vídeo
+  content   String // Texto ou link para mídia
+  type      String // Texto, Imagem, Vídeo
   createdAt DateTime @default(now())
   expiresAt DateTime
 
@@ -346,56 +334,56 @@ model Status {
 }
 
 model MessageReaction {
-  id         String   @id @default(uuid())
-  messageId  String
-  userId     String
-  reaction   String
-  createdAt  DateTime @default(now())
-  message    GroupMessage? @relation(fields: [messageId], references: [id])
+  id        String        @id @default(uuid())
+  messageId String
+  userId    String
+  reaction  String
+  createdAt DateTime      @default(now())
+  message   GroupMessage? @relation(fields: [messageId], references: [id])
+
   @@map("message_reactions")
 }
 
-
 model Contact {
-  id              String          @id @default(uuid())
-  graphicAccount  GraphicAccount  @relation(fields: [graphicAccountId], references: [id])
+  id               String         @id @default(uuid())
+  graphicAccount   GraphicAccount @relation(fields: [graphicAccountId], references: [id])
   graphicAccountId String
-  contact         GraphicAccount  @relation("ContactRelation", fields: [contactId], references: [id])
-  contactId       String
-  created_at      DateTime        @default(now())
+  contact          GraphicAccount @relation("ContactRelation", fields: [contactId], references: [id])
+  contactId        String
+  created_at       DateTime       @default(now())
 
   @@map("contacts")
 }
 
 model AudioVideoCall {
-  id             String        @id @default(uuid())
-  callerId       String
-  receiverId     String
-  startTime      DateTime      @default(now())
-  endTime        DateTime?
-  status         CallStatus    @default(PENDING)
-  created_at     DateTime      @default(now())
-  updated_at     DateTime      @updatedAt
-  caller         GraphicAccount @relation("AudioCallCaller", fields: [callerId], references: [id])
-  receiver       GraphicAccount @relation("AudioCallReceiver", fields: [receiverId], references: [id])
-  
+  id         String         @id @default(uuid())
+  callerId   String
+  receiverId String
+  startTime  DateTime       @default(now())
+  endTime    DateTime?
+  status     CallStatus     @default(PENDING)
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  caller     GraphicAccount @relation("AudioCallCaller", fields: [callerId], references: [id])
+  receiver   GraphicAccount @relation("AudioCallReceiver", fields: [receiverId], references: [id])
+
   @@map("audio_video_calls")
 }
 
 model Invite {
-  id             String          @id @default(uuid())
-  senderId       String          // Quem enviou o convite
-  receiverId     String          // Quem recebeu o convite
-  status         InviteStatus    @default(PENDING) // Pendente, Aceito ou Recusado
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
+  id         String       @id @default(uuid())
+  senderId   String // Quem enviou o convite
+  receiverId String // Quem recebeu o convite
+  status     InviteStatus @default(PENDING) // Pendente, Aceito ou Recusado
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
 
-  sender         GraphicAccount  @relation("SentInvites", fields: [senderId], references: [id])
-  receiver       GraphicAccount  @relation("ReceivedInvites", fields: [receiverId], references: [id])
-  type             String?          @default("USER")
+  sender   GraphicAccount @relation("SentInvites", fields: [senderId], references: [id])
+  receiver GraphicAccount @relation("ReceivedInvites", fields: [receiverId], references: [id])
+  type     String?        @default("USER")
+
   @@map("invites")
 }
-
 
 enum CallStatus {
   PENDING

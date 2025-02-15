@@ -12,7 +12,10 @@ export async function getAllGroupsProfilePictures(
   reply: FastifyReply,
 ) {
   try {
+    const { id } = request.params as { id: string };
+
     const groups = await prisma.group.findMany({
+      where: { ownerId: id },
       include: { owner: true },
     });
 
@@ -20,44 +23,9 @@ export async function getAllGroupsProfilePictures(
       return reply.status(404).send({ message: "No groups found." });
     }
 
-    // Remover IDs duplicados
-    const uniqueGroupIds = [
-      ...new Set(groups.map((groups: { id: any }) => groups.id)),
-    ];
+    const groupAvatarLinks = groups.map((group) => group.groupAvatarLink);
 
-    // Criar um array para armazenar todas as imagens
-    const imagesArray: { groupId: string; image: string | null }[] = [];
-
-    for (const groupId of uniqueGroupIds) {
-      // Iterar sobre todos os IDs de grupo unicostIds) {
-      const result = await mediaServices.list({ groupId });
-
-      if (!result.current) {
-        imagesArray.push({ groupId, image: null });
-        continue;
-      }
-
-      const imagePath = path.join(
-        process.cwd(),
-        "uploads-groups",
-        result.current,
-      ); // Alterado para a raiz do projeto
-
-      if (!fs.existsSync(imagePath)) {
-        imagesArray.push({ groupId, image: null });
-        continue;
-      }
-
-      // Converte a imagem para Base64 para envio no JSON
-      const imageBuffer = fs.readFileSync(imagePath);
-      const base64Image = `data:image/png;base64,${imageBuffer.toString(
-        "base64",
-      )}`;
-
-      imagesArray.push({ groupId, image: base64Image });
-    }
-
-    return reply.send({ images: imagesArray }); // Envia todas as imagens em um JSON
+    return reply.send(groupAvatarLinks).status(200);
   } catch (error) {
     return reply.status(500).send({ message: "Internal server error." });
   }
