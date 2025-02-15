@@ -74,12 +74,12 @@ export async function MediaRoutes(app: FastifyInstance) {
     "/update-group-profile-picture/:id",
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { userId, avatarLink } = request.body as {
-          userId: string;
+        const { groupId, avatarLink } = request.body as {
+          groupId: string;
           avatarLink: string;
         };
 
-        if (!userId) {
+        if (!groupId) {
           return reply
             .status(400)
             .send({ message: "ID do usuário não informado." });
@@ -92,7 +92,7 @@ export async function MediaRoutes(app: FastifyInstance) {
         }
 
         await prisma.group.update({
-          where: { id: userId },
+          where: { id: groupId },
           data: { groupAvatarLink: avatarLink },
         });
 
