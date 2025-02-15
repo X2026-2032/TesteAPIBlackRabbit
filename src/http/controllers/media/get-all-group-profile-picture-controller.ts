@@ -23,7 +23,12 @@ export async function getAllGroupsProfilePictures(
       return reply.status(404).send({ message: "No groups found." });
     }
 
-    const groupAvatarLinks = groups.map((group) => group.groupAvatarLink);
+    const groupAvatarLinks = groups.map((group) => {
+      return {
+        id: group.id,
+        groupAvatarLink: group.groupAvatarLink,
+      };
+    });
 
     return reply.send(groupAvatarLinks).status(200);
   } catch (error) {

@@ -20,14 +20,15 @@ export async function getAllProfilePictures(
 
     const contacts = await prisma.contact.findMany({
       where: { graphicAccountId: id },
-      include: { graphicAccount: true },
+      include: { contact: true },
     });
 
-    const avatarLinks = contacts.map(
-      (contact) => contact.graphicAccount.avatarLink,
-    );
+    const userData = contacts.map((contact) => ({
+      id: contact.contact.id,
+      avatarLink: contact.contact.avatarLink,
+    }));
 
-    return reply.send(avatarLinks);
+    return reply.send(userData);
   } catch (error) {
     return reply.status(500).send({ message: "Internal server error." });
   }
