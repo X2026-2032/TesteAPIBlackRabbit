@@ -74,6 +74,8 @@ export function setupChatWebSocket(io: Server) {
         userStatusMap[userId].online = false;
         userStatusMap[userId].lastSeen = new Date().toISOString();
       }
+
+      socket.emit("send_user_status", userStatusMap);
     });
 
     socket.on("get_user_status", async (userId) => {
