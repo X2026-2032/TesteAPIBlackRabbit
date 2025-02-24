@@ -68,7 +68,7 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
     const inviteData = {
       message: "Convite enviado com sucesso",
       invite: newInvite,
-      publicKey: sender.publicKey, // Adicionando a chave pública
+      publicKey: receiver.publicKey, // Adicionando a chave pública
     };
 
     io.emit("invite_sent", inviteData);
