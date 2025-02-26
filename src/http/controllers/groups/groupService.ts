@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
-
 // Criar Grupo
 export async function createGroup(
   name: string,
   description: string,
-  ownerUsername: string
+  ownerUsername: string,
+  groupKey: string,
 ) {
   // Busca o dono do grupo com as relações de grupos
   const owner = await prisma.graphicAccount.findUnique({
@@ -25,6 +25,7 @@ export async function createGroup(
       description,
       ownerId: owner.id,
       ownerUserName: owner.userName,
+      publicKey: groupKey,
     },
   });
 
@@ -33,21 +34,18 @@ export async function createGroup(
     data: {
       groupId: group.id,
       graphicAccountId: owner.id,
-      isOwner: true,  // Marca o usuário como dono do grupo
-      inviteStatus: 'ACCEPTED',  // O dono do grupo tem o convite aceito automaticamente
+      isOwner: true, // Marca o usuário como dono do grupo
+      inviteStatus: "ACCEPTED", // O dono do grupo tem o convite aceito automaticamente
     },
   });
 
   // Retorna o grupo criado junto com as informações do dono e os grupos associados
   return {
     group,
-    ownedGroups: owner.ownedGroups,  // Retorna os grupos que o usuário é dono
-    groupMembers: owner.groupMembers,  // Retorna os grupos que o usuário é membro
+    ownedGroups: owner.ownedGroups, // Retorna os grupos que o usuário é dono
+    groupMembers: owner.groupMembers, // Retorna os grupos que o usuário é membro
   };
 }
-
-
-
 
 // Adicionar Usuário ao Grupo
 export async function addUserToGroup(groupId: string, username: string) {
@@ -95,8 +93,6 @@ export async function blockUserInGroup(groupId: string, username: string) {
   });
 }
 
-
-
 // Listar Grupos do Usuário
 export async function getUserGroups(username: string) {
   const user = await prisma.graphicAccount.findUnique({
@@ -124,12 +120,19 @@ export async function getGroupsInGraphicAccount(graphicAccountId: string) {
     });
 
     // Mapear os grupos e adicionar o número de membros
-    return groups.map((group: { id: any; name: any; description: any; members: string | any[]; }) => ({
-      id: group.id,
-      name: group.name,
-      description: group.description || null,
-      memberCount: group.members ? group.members.length : 0, // Contagem de membros
-    }));
+    return groups.map(
+      (group: {
+        id: any;
+        name: any;
+        description: any;
+        members: string | any[];
+      }) => ({
+        id: group.id,
+        name: group.name,
+        description: group.description || null,
+        memberCount: group.members ? group.members.length : 0, // Contagem de membros
+      }),
+    );
   } catch (error) {
     console.error("Erro ao obter grupos:", error);
     throw new Error("Erro ao obter grupos");
@@ -140,29 +143,29 @@ export async function getGroupsInGraphicAccount(graphicAccountId: string) {
 // Enviar Convite
 export async function sendInvite(groupId: string, username: string) {
   const group = await prisma.group.findUnique({
-      where: { id: groupId },
+    where: { id: groupId },
   });
   if (!group) throw new Error("Group not found");
-  
+
   const user = await prisma.graphicAccount.findUnique({
-      where: { userName: username },
+    where: { userName: username },
   });
   if (!user) throw new Error("User not found");
 
   // Verificar se o usuário já foi convidado ou já está no grupo
   const existingInvite = await prisma.groupMember.findFirst({
-      where: { groupId, graphicAccountId: user.id },
+    where: { groupId, graphicAccountId: user.id },
   });
   if (existingInvite) {
-      if (existingInvite.inviteStatus === 'ACCEPTED') {
-          throw new Error("User already a member of the group");
-      }
-      throw new Error("Invite already sent or rejected");
+    if (existingInvite.inviteStatus === "ACCEPTED") {
+      throw new Error("User already a member of the group");
+    }
+    throw new Error("Invite already sent or rejected");
   }
 
   // Recuperar a chave pública do owner
   const owner = await prisma.graphicAccount.findUnique({
-      where: { userName: group.ownerUserName! },
+    where: { userName: group.ownerUserName! },
   });
   if (!owner) throw new Error("Owner not found");
 
@@ -170,18 +173,16 @@ export async function sendInvite(groupId: string, username: string) {
 
   // Criação do convite, incluindo a chave pública do owner
   return prisma.groupMember.create({
-      data: {
-          groupId,
-          graphicAccountId: user.id,
-          inviteStatus: 'PENDING',
-          ownerPublicKey: ownerPublicKey, // Incluindo a chave pública no convite
-      },
+    data: {
+      groupId,
+      graphicAccountId: user.id,
+      inviteStatus: "PENDING",
+      ownerPublicKey: ownerPublicKey, // Incluindo a chave pública no convite
+    },
   });
 }
 
-
-
-    // Aceitar Convite
+// Aceitar Convite
 // Aceitar Convite
 export async function acceptInvite(groupId: string, username: string) {
   const user = await prisma.graphicAccount.findUnique({
@@ -190,7 +191,7 @@ export async function acceptInvite(groupId: string, username: string) {
   if (!user) throw new Error("User not found");
 
   const invite = await prisma.groupMember.findFirst({
-    where: { groupId, graphicAccountId: user.id, inviteStatus: 'PENDING' },
+    where: { groupId, graphicAccountId: user.id, inviteStatus: "PENDING" },
   });
 
   if (!invite) throw new Error("No pending invite found");
@@ -198,13 +199,12 @@ export async function acceptInvite(groupId: string, username: string) {
   // Atualiza o status do convite para aceito
   await prisma.groupMember.update({
     where: { id: invite.id },
-    data: { inviteStatus: 'ACCEPTED' },
+    data: { inviteStatus: "ACCEPTED" },
   });
 
   // Retorna a chave pública do criador do grupo
   const groupOwner = await prisma.groupMember.findFirst({
-    where: { groupId, 
-      isOwner: true },  // Considerando que você tem um campo 'isOwner' para identificar o dono
+    where: { groupId, isOwner: true }, // Considerando que você tem um campo 'isOwner' para identificar o dono
   });
 
   if (!groupOwner) throw new Error("Group owner not found");
@@ -217,31 +217,35 @@ export async function acceptInvite(groupId: string, username: string) {
     throw new Error("Public key of the group owner not found");
   }
 
+  const group = await prisma.group.findUnique({
+    where: { id: groupId },
+  });
+
   // Agora você pode retornar a chave pública para o usuário que aceitou
   return {
     message: "Convite aceito com sucesso",
-    publicKey: ownerAccount.publicKey,  // Chave pública do dono do grupo
+    publicKey: group?.publicKey, // Chave pública do dono do grupo
   };
 }
 
-  // Recusar Convite
-  export async function rejectInvite(groupId: string, username: string) {
-    const user = await prisma.graphicAccount.findUnique({
-      where: { userName: username },
-    });
-    if (!user) throw new Error("User not found");
-  
-    const invite = await prisma.groupMember.findFirst({
-      where: { groupId, graphicAccountId: user.id, inviteStatus: 'PENDING' },
-    });
-  
-    if (!invite) throw new Error("No pending invite found");
-  
-    return prisma.groupMember.update({
-      where: { id: invite.id },
-      data: { inviteStatus: 'REJECTED' },
-    });
-  }
+// Recusar Convite
+export async function rejectInvite(groupId: string, username: string) {
+  const user = await prisma.graphicAccount.findUnique({
+    where: { userName: username },
+  });
+  if (!user) throw new Error("User not found");
+
+  const invite = await prisma.groupMember.findFirst({
+    where: { groupId, graphicAccountId: user.id, inviteStatus: "PENDING" },
+  });
+
+  if (!invite) throw new Error("No pending invite found");
+
+  return prisma.groupMember.update({
+    where: { id: invite.id },
+    data: { inviteStatus: "REJECTED" },
+  });
+}
 
 // Listar todos os grupos com os membros relacionados
 export async function getAllGroups() {
@@ -258,7 +262,11 @@ export async function getAllGroups() {
 
 // 2. Serviço de Editar Grupo
 // Serviço de Editar Grupo
-export async function editGroupByName(groupName: string, newName?: string, newDescription?: string) {
+export async function editGroupByName(
+  groupName: string,
+  newName?: string,
+  newDescription?: string,
+) {
   try {
     const group = await prisma.group.findFirst({ where: { name: groupName } });
     if (!group) throw new Error("Group not found");
@@ -266,8 +274,8 @@ export async function editGroupByName(groupName: string, newName?: string, newDe
     // Preparando os dados para a atualização
     const updateData: any = {};
 
-    if (newName) updateData.name = newName;  // Atualiza o nome se for passado
-    if (newDescription) updateData.description = newDescription;  // Atualiza a descrição se for passado
+    if (newName) updateData.name = newName; // Atualiza o nome se for passado
+    if (newDescription) updateData.description = newDescription; // Atualiza a descrição se for passado
 
     // Atualiza o grupo com os dados fornecidos
     return await prisma.group.update({
@@ -280,14 +288,13 @@ export async function editGroupByName(groupName: string, newName?: string, newDe
   }
 }
 
-
 // Serviço de Listar Membros
 export async function getGroupMembers(groupId: string) {
   try {
     return await prisma.groupMember.findMany({
       where: { groupId }, // Filtro correto usando o 'groupId'
       include: {
-groupMembers: true, // Inclui informações dos membros do grupo
+        groupMembers: true, // Inclui informações dos membros do grupo
       },
     });
   } catch (error) {
@@ -307,7 +314,7 @@ export async function listGroupInvitesService(graphicAccountId: string) {
       },
     });
 
-    return groupInvites.map(invite => ({
+    return groupInvites.map((invite) => ({
       id: invite.id,
       groupId: invite.groupId,
       groupName: invite.group.name,
@@ -317,8 +324,8 @@ export async function listGroupInvitesService(graphicAccountId: string) {
       created_at: invite.created_at,
     }));
   } catch (error) {
-    console.error('Erro ao listar convites de grupos:', error);
-    throw new Error('Erro ao listar convites de grupos');
+    console.error("Erro ao listar convites de grupos:", error);
+    throw new Error("Erro ao listar convites de grupos");
   }
 }
 
@@ -410,18 +417,18 @@ export async function getUserGroupsWithMembership(username: string) {
 
   // Combinar os dois tipos de grupos (dono e membro)
   const allGroups = [
-    ...ownerGroups.map(group => ({
+    ...ownerGroups.map((group) => ({
       ...group,
       role: "owner", // Define o papel do usuário como dono
     })),
-    ...memberGroups.map(groupMember => ({
+    ...memberGroups.map((groupMember) => ({
       ...groupMember.group,
       role: "member", // Define o papel do usuário como membro
     })),
   ];
 
   // Mapear os dados para o formato necessário
-  return allGroups.map(group => ({
+  return allGroups.map((group) => ({
     id: group.id,
     name: group.name,
     description: group.description || null,

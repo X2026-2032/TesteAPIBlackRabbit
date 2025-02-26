@@ -7,10 +7,11 @@ export async function createGroup(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const { name, description, ownerUsername } = request.body as {
+  const { name, description, ownerUsername, groupKey } = request.body as {
     name: string;
     description: string;
     ownerUsername: string;
+    groupKey: string;
   };
 
   try {
@@ -19,6 +20,7 @@ export async function createGroup(
       name,
       description,
       ownerUsername,
+      groupKey,
     );
 
     // Buscar o grupo novamente para incluir todos os dados necessários
@@ -144,8 +146,8 @@ export async function acceptInvite(
     username: string;
   };
   try {
-    await groupService.acceptInvite(groupId, username);
-    reply.status(200).send({ message: "Invite accepted" });
+    const result = await groupService.acceptInvite(groupId, username);
+    reply.status(200).send(result);
   } catch (error) {
     reply.status(400).send({ error });
   }
