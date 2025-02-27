@@ -221,6 +221,7 @@ export async function acceptInvite(groupId: string, username: string) {
     where: { id: groupId },
   });
 
+  if (!group) throw new Error("Group not found");
   // Agora você pode retornar a chave pública para o usuário que aceitou
   return {
     message: "Convite aceito com sucesso",
@@ -400,7 +401,7 @@ export async function getUserGroupsWithMembership(username: string) {
 
   // Buscar os grupos onde o usuário é membro
   const memberGroups = await prisma.groupMember.findMany({
-    where: { graphicAccountId: user.id },
+    where: { graphicAccountId: user.id, inviteStatus: "ACCEPTED" },
     include: {
       group: {
         include: {
