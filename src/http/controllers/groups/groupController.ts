@@ -92,12 +92,10 @@ export async function sendInvite(request: FastifyRequest, reply: FastifyReply) {
     groupId: string;
     username: string;
   };
-  console.log("Group ID:", groupId);
-  console.log("Username:", username);
+
   try {
     const invite = await groupService.sendInvite(groupId, username);
-    console.log("Group ID:", groupId);
-    console.log("Username:", username);
+
     reply.status(200).send(invite);
   } catch (error) {
     reply.status(400).send({ error });
