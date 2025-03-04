@@ -45,6 +45,8 @@ export function setupChatWebSocket(io: Server) {
 
   const userSocketMap: { [userId: string]: string } = {};
 
+  const messagesStatusUpdateQueue: { [senderId: string]: Message[] } = {};
+
   const userStatusMap: {
     [userId: string]: { online: boolean; lastSeen: string };
   } = {};
@@ -64,6 +66,30 @@ export function setupChatWebSocket(io: Server) {
       };
 
       socket.emit("send_user_status", userStatusMap);
+
+      if (userMessageQueues[userId]) {
+        userMessageQueues[userId].forEach((message) => {
+          if (message.status === "sent") {
+            message.status = "delivered";
+            if (userStatusMap[message.senderId].online) {
+              io.to(message.senderId).emit("update_status_message", message);
+            }
+
+            if (!messagesStatusUpdateQueue[message.senderId]) {
+              messagesStatusUpdateQueue[message.senderId] = [];
+            }
+
+            messagesStatusUpdateQueue[message.senderId].push(message);
+          }
+        });
+      }
+
+      if (messagesStatusUpdateQueue[userId]) {
+        messagesStatusUpdateQueue[userId].forEach((message) => {
+          io.to(userId).emit("update_status_message", message);
+        });
+        delete messagesStatusUpdateQueue[userId];
+      }
     });
 
     // Usuário desconectou
@@ -113,6 +139,23 @@ export function setupChatWebSocket(io: Server) {
 
       if (!userGroupsMap[groupId].includes(userId)) {
         userGroupsMap[groupId].push(userId);
+      }
+
+      if (userMessageQueues[userId]) {
+        userMessageQueues[userId].forEach((message) => {
+          if (message.status === "delivered") {
+            message.status = "seen";
+            if (userStatusMap[message.senderId].online) {
+              io.to(message.senderId).emit("update_status_message", message);
+            }
+
+            if (!messagesStatusUpdateQueue[message.senderId]) {
+              messagesStatusUpdateQueue[message.senderId] = [];
+            }
+
+            messagesStatusUpdateQueue[message.senderId].push(message);
+          }
+        });
       }
     });
 
@@ -509,10 +552,7 @@ export function setupChatWebSocket(io: Server) {
       if (messages.length > 0) {
         messages.forEach((message: Message) => {
           message.status = "seen";
-          io.to(message.receiverId).emit(
-            "update_message_status_sender",
-            message,
-          );
+          io.to(message.senderId).emit("update_message_status_sender", message);
         });
       }
     });
