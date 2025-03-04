@@ -1,3 +1,4 @@
+import { io } from "@/app";
 import { prisma } from "@/lib/prisma";
 
 // Criar Grupo
@@ -170,6 +171,14 @@ export async function sendInvite(groupId: string, username: string) {
   if (!owner) throw new Error("Owner not found");
 
   const ownerPublicKey = owner.publicKey; // Supondo que você tem o campo `publicKey` no modelo `graphicAccount`
+
+  io.to(user.id).emit("new_notification", {
+    title: "Você foi convidado para uma nova conversa em grupo",
+    message:
+      "Você acaba de receber um convite para uma nova conversa em grupo.",
+    type: "success",
+    isRead: false,
+  });
 
   // Criação do convite, incluindo a chave pública do owner
   return prisma.groupMember.create({

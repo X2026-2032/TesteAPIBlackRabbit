@@ -71,8 +71,13 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
       publicKey: receiver.publicKey, // Adicionando a chave pública
     };
 
-    io.emit("invite_sent", inviteData);
-
+    io.to(receiverId).emit("new_notification", {
+      title: "Você foi convidado para uma nova conversa",
+      message:
+        "Você acaba de receber um convite para uma nova conversa privada.",
+      type: "success",
+      isRead: false,
+    });
     return reply.status(200).send(inviteData);
   } catch (error) {
     console.error("Erro ao enviar convite:", error);
