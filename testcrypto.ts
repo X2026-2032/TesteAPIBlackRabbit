@@ -1,18 +1,16 @@
 // import forge from 'node-forge';
-const forge = require('node-forge');
-
+const forge = require("node-forge");
 
 // Função para gerar o par de chaves RSA
 export const generateRSAKeyPair = () => {
   const keypair = forge.pki.rsa.generateKeyPair(2048); // Gerando as chaves RSA
   const privateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
   const publicKeyPem = forge.pki.publicKeyToPem(keypair.publicKey);
-console.log('Chave pública gerada:');
-console.log(publicKeyPem);
-console.log('Chave privada gerada:');
-console.log(privateKeyPem);
+  console.log("Chave pública gerada:");
+  console.log(publicKeyPem);
+  console.log("Chave privada gerada:");
+  console.log(privateKeyPem);
 
-  
   return { privateKeyPem, publicKeyPem };
 };
 
@@ -34,7 +32,7 @@ export const encryptMessage = (message: string, publicKey: string) => {
   const aesKey = forge.random.getBytesSync(32);
 
   // Criptografar mensagem com AES
-  const cipher = forge.cipher.createCipher('AES-CBC', aesKey);
+  const cipher = forge.cipher.createCipher("AES-CBC", aesKey);
   const iv = forge.random.getBytesSync(16); // Vetor de inicialização
   cipher.start({ iv });
   cipher.update(forge.util.createBuffer(message));
@@ -43,7 +41,7 @@ export const encryptMessage = (message: string, publicKey: string) => {
 
   // Criptografar chave AES com RSA
   const rsaPublicKey = forge.pki.publicKeyFromPem(publicKey);
-  const encryptedKey = rsaPublicKey.encrypt(aesKey, 'RSA-OAEP', {
+  const encryptedKey = rsaPublicKey.encrypt(aesKey, "RSA-OAEP", {
     md: forge.md.sha256.create(),
   });
 
@@ -58,25 +56,31 @@ export const encryptMessage = (message: string, publicKey: string) => {
 // Função para descriptografar mensagem com a chave privada do destinatário
 export const decryptMessage = (
   encryptedData: { encryptedMessage: string; encryptedKey: string; iv: string },
-  privateKeyPem: string
+  privateKeyPem: string,
 ): string => {
   // Extrair os valores do objeto
   const { encryptedMessage, encryptedKey, iv } = encryptedData;
 
   // Descriptografar a chave AES com RSA
   const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-  const aesKey = privateKey.decrypt(forge.util.decode64(encryptedKey), 'RSA-OAEP', {
-    md: forge.md.sha256.create(),
-  });
+  const aesKey = privateKey.decrypt(
+    forge.util.decode64(encryptedKey),
+    "RSA-OAEP",
+    {
+      md: forge.md.sha256.create(),
+    },
+  );
 
   // Descriptografar a mensagem com AES
-  const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
+  const decipher = forge.cipher.createDecipher("AES-CBC", aesKey);
   decipher.start({ iv: forge.util.decode64(iv) });
-  decipher.update(forge.util.createBuffer(forge.util.decode64(encryptedMessage)));
+  decipher.update(
+    forge.util.createBuffer(forge.util.decode64(encryptedMessage)),
+  );
   const success = decipher.finish();
 
   if (!success) {
-    throw new Error('Falha na descriptografia da mensagem.');
+    throw new Error("Falha na descriptografia da mensagem.");
   }
 
   return decipher.output.toString();
@@ -135,23 +139,25 @@ export const decryptMessage = (
 
 async function testCrypto() {
   // Mensagem de teste
-  const message = 'Mensagem secreta para testar a criptografia e descriptografia.';
+  const message =
+    "Mensagem secreta para testar a criptografia e descriptografia.";
 
   // Gerar chaves RSA para o teste (substitua por suas chaves se já tiver)
-  const { publicKeyPem: publicKey, privateKeyPem: privateKey } = generateRSAKeyPair(); // Caso queira testar com chaves novas
-  console.log('Chave pública gerada:');
+  const { publicKeyPem: publicKey, privateKeyPem: privateKey } =
+    generateRSAKeyPair(); // Caso queira testar com chaves novas
+  console.log("Chave pública gerada:");
   console.log(publicKey);
-  console.log('Chave privada gerada:');
+  console.log("Chave privada gerada:");
   console.log(privateKey);
 
   // Criptografar a mensagem
   const encryptedMessage = encryptMessage(message, publicKey);
-  console.log('Mensagem criptografada:');
+  console.log("Mensagem criptografada:");
   console.log(encryptedMessage);
 
   // Descriptografar a mensagem
   const decryptedMessage = decryptMessage(encryptedMessage, privateKey);
-  console.log('Mensagem descriptografada:');
+  console.log("Mensagem descriptografada:");
   console.log(decryptedMessage);
 }
 

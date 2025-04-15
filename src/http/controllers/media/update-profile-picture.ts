@@ -15,16 +15,13 @@
 // ) {
 //   console.log("[Controller] Iniciando o método `updateProfilePicture`");
 
-   
-     
-  
 //       // // Define o caminho de armazenamento para o arquivo
 //       // const filePath = path.join(process.cwd(), "uploads", file.filename);
 //       // const fileStream = fs.createWriteStream(filePath);
-  
+
 //       // // Salva o arquivo
 //       // file.pipe(fileStream);
-  
+
 //   try {
 //     // Obtem os parâmetros da requisição
 //     const params = request.params as RequestParams;

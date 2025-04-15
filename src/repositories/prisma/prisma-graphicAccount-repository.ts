@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma, GraphicAccount } from "@prisma/client";
-import { GraphicAccountsUsersRepository, GraphicAccountUser } from "../graphicAccount-respository";
+import {
+  GraphicAccountsUsersRepository,
+  GraphicAccountUser,
+} from "../graphicAccount-respository";
 
-export class PrismaGraphicAccountUsersRepository implements GraphicAccountsUsersRepository {
-
-
- 
-
+export class PrismaGraphicAccountUsersRepository
+  implements GraphicAccountsUsersRepository
+{
   async findById(id: string): Promise<GraphicAccount | null> {
     return prisma.graphicAccount.findUnique({
       where: {
@@ -18,7 +19,9 @@ export class PrismaGraphicAccountUsersRepository implements GraphicAccountsUsers
     });
   }
 
-  async create(data: Prisma.GraphicAccountCreateInput): Promise<GraphicAccount> {
+  async create(
+    data: Prisma.GraphicAccountCreateInput,
+  ): Promise<GraphicAccount> {
     const user = await prisma.graphicAccount.create({
       data,
     });
@@ -35,12 +38,12 @@ export class PrismaGraphicAccountUsersRepository implements GraphicAccountsUsers
   // }
 
   async findByUserName(userName: string): Promise<GraphicAccount | null> {
-  return prisma.graphicAccount.findUnique({
-    where: {
-      userName,
-    },
-  });
-}
+    return prisma.graphicAccount.findUnique({
+      where: {
+        userName,
+      },
+    });
+  }
 
   async save(data: GraphicAccount): Promise<GraphicAccount> {
     const user = await prisma.graphicAccount.update({
@@ -49,7 +52,7 @@ export class PrismaGraphicAccountUsersRepository implements GraphicAccountsUsers
       },
       data,
     });
-  
+
     return user;
   }
 }

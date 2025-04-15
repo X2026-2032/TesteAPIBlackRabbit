@@ -11,9 +11,7 @@ interface GetUserProfileUseCaseResponse {
 }
 
 export class GetUserProfileUseCase {
-  constructor(
-    private usersRepository: UsersRepository,
-  ) {}
+  constructor(private usersRepository: UsersRepository) {}
 
   async execute({
     userId,
@@ -23,7 +21,7 @@ export class GetUserProfileUseCase {
     const graphic = await prisma.graphicAccount.findUnique({
       where: {
         id: userId,
-      }
+      },
     });
 
     const whereTransactions = graphic?.id
@@ -35,12 +33,10 @@ export class GetUserProfileUseCase {
             user_id: userId,
           },
         };
-    
 
     if (!user && !graphic) throw new Error("Resource not found.");
 
     if (graphic) {
-      
       const account = {
         ...graphic,
         userMasterType: user ? user.type : "",
@@ -51,17 +47,13 @@ export class GetUserProfileUseCase {
       return {
         user: {
           ...account,
-        }
+        },
       } as any;
     }
 
     if (!user) throw new Error("Resouce not found.");
 
-
-
-  
     return {
-      
       user: {
         ...user,
         password: undefined,

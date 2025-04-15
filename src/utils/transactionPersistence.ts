@@ -4,8 +4,12 @@ import { getMaxNumberOfTransactionByGraphicAccountTransactions } from "./generat
 const prisma = new PrismaClient();
 
 // Função para persistir dados no atributo transaction_id
-export async function persistTransactionId(transactionId: string, graphicAccountId: string) {
-  const number_of_transaction = await getMaxNumberOfTransactionByGraphicAccountTransactions()
+export async function persistTransactionId(
+  transactionId: string,
+  graphicAccountId: string,
+) {
+  const number_of_transaction =
+    await getMaxNumberOfTransactionByGraphicAccountTransactions();
   try {
     const result = await prisma.graphicAccountTransaction.create({
       data: {

@@ -25,6 +25,7 @@ model User {
   api_key      String?
   AuthToken    AuthToken[]
   Pictures     Pictures[]
+  QrToken      QrToken[]
 
   @@map("users")
 }
@@ -384,6 +385,25 @@ model Invite {
   type     String?        @default("USER")
 
   @@map("invites")
+}
+
+model QrToken {
+  id        String        @id @default(uuid())
+  token     String        @unique
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  status    QrTokenStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime      @default(now())
+}
+
+enum QrTokenStatus {
+  PENDING
+  USED
+  EXPIRED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 enum CallStatus {

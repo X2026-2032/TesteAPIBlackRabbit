@@ -5,7 +5,7 @@ import { z } from "zod";
 
 export async function getGraphicAccountByNumberIdentifier(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const querySchema = z.object({
@@ -14,9 +14,12 @@ export async function getGraphicAccountByNumberIdentifier(
 
     const { number_identifier } = querySchema.parse(request.query);
 
-    const getGraphicAccountByNumberIdentifierUseCase = new GetGraphicAccountByNumberIdentifierUseCase(); // Instancie o use case
-    
-    const { user } = await getGraphicAccountByNumberIdentifierUseCase.execute({ number_identifier }); // Chame o método execute
+    const getGraphicAccountByNumberIdentifierUseCase =
+      new GetGraphicAccountByNumberIdentifierUseCase(); // Instancie o use case
+
+    const { user } = await getGraphicAccountByNumberIdentifierUseCase.execute({
+      number_identifier,
+    }); // Chame o método execute
 
     return reply.status(200).send({ user });
   } catch (error) {

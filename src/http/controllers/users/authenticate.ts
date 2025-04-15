@@ -1,15 +1,13 @@
-
-// 
+//
 
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { makeAuthenticateUseCase } from "@/use-cases/factories/make-authenticate-use-case";
 import { AppError, IRequest } from "@/use-cases/errors/app-error";
 
-
 export async function authenticate(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const schema = z.object({
@@ -20,15 +18,20 @@ export async function authenticate(
     const { userName, password_hash } = schema.parse(request.body);
 
     const authenticateUseCase = makeAuthenticateUseCase();
-    const { graphicUser: user } = await authenticateUseCase.execute({ userName, password_hash });
+    const { graphicUser: user } = await authenticateUseCase.execute({
+      userName,
+      password_hash,
+    });
 
     if (!user) {
-      return reply.status(401).send({ message: "Usuário ou senha incorretos." });
+      return reply
+        .status(401)
+        .send({ message: "Usuário ou senha incorretos." });
     }
 
     const token = await reply.jwtSign(
       { role: user.role },
-      { sign: { sub: user.id, expiresIn: "7d" } }
+      { sign: { sub: user.id, expiresIn: "7d" } },
     );
 
     return reply.status(200).send({
@@ -36,12 +39,11 @@ export async function authenticate(
       token,
     });
   } catch (error) {
-        console.error(error);
-    
-        throw new AppError(error as unknown as IRequest);
-      }
-    }
+    console.error(error);
 
+    throw new AppError(error as unknown as IRequest);
+  }
+}
 
 // import { AppError, IRequest } from "@/use-cases/errors/app-error";
 // import { makeAuthenticateUseCase } from "@/use-cases/factories/make-authenticate-use-case";

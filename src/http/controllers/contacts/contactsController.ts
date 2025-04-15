@@ -9,9 +9,9 @@ interface ListContactsQuery {
 // Listar contatos de um usuário
 export const listContacts = async (
   req: FastifyRequest<{ Params: { userId: string } }>, // Alterando para capturar o userId de params
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
-  const { userId } = req.params;  // Agora pega o userId de params
+  const { userId } = req.params; // Agora pega o userId de params
 
   try {
     const user = await prisma.graphicAccount.findUnique({

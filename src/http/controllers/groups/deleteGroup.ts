@@ -9,15 +9,20 @@ interface DeleteGroupRequest {
 
 export async function deleteGroupByName(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
-  const { name, ownerUsername } = request.body as { name: string; ownerUsername: string }; // Certifique-se de que está recebendo o `ownerUsername`
+  const { name, ownerUsername } = request.body as {
+    name: string;
+    ownerUsername: string;
+  }; // Certifique-se de que está recebendo o `ownerUsername`
 
   console.log("Nome do grupo:", name); // Verifique o nome do grupo
   console.log("Username do proprietário:", ownerUsername); // Verifique o username do proprietário
 
   if (!ownerUsername || !name) {
-    return reply.status(400).send({ error: "Nome do grupo ou usuário inválido." });
+    return reply
+      .status(400)
+      .send({ error: "Nome do grupo ou usuário inválido." });
   }
 
   try {
@@ -34,10 +39,12 @@ export async function deleteGroupByName(
     }
 
     // Verificando se o grupo existe e pertence ao proprietário
-    const group = owner.ownedGroups.find(group => group.name === name);
+    const group = owner.ownedGroups.find((group) => group.name === name);
 
     if (!group) {
-      throw new Error("Grupo não encontrado ou o usuário não tem permissão para excluí-lo.");
+      throw new Error(
+        "Grupo não encontrado ou o usuário não tem permissão para excluí-lo.",
+      );
     }
 
     // Excluindo o grupo
@@ -49,6 +56,8 @@ export async function deleteGroupByName(
     return reply.send({ message: "Grupo excluído com sucesso." });
   } catch (error) {
     console.error("Erro ao excluir o grupo:", error);
-    return reply.status(400).send({ error: error || "Erro desconhecido ao excluir o grupo." });
+    return reply
+      .status(400)
+      .send({ error: error || "Erro desconhecido ao excluir o grupo." });
   }
 }
