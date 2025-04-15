@@ -10,7 +10,6 @@ export const CheckTokenStatus = async (
 
     const qrToken = await prisma.qrToken.findUnique({
       where: { token },
-      include: { user: true },
     });
 
     if (!qrToken) {
@@ -20,7 +19,6 @@ export const CheckTokenStatus = async (
     return reply.send({
       status: qrToken.status,
       userId: qrToken.userId,
-      user: qrToken.user,
       expiresAt: qrToken.expiresAt,
     });
   } catch (err: any) {

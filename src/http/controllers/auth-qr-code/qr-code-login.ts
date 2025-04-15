@@ -35,7 +35,7 @@ export const QrCodeLogin = async (
     const updatedToken = await prisma.qrToken.update({
       where: { token },
       data: {
-        status: "AUTHORIZED",
+        status: "COMPLETED",
         userId: user.id,
       },
     });

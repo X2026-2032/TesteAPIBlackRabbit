@@ -26,6 +26,7 @@ import { MessageRoutes } from "./http/controllers/privateMessage/routes";
 import { GroupRoutes } from "./http/controllers/groups/routes";
 import { InviteRoutes } from "./http/controllers/invites/routes";
 import { ContactsRoutes } from "./http/controllers/contacts/routes";
+import { AuthQrCodeRoutes } from "./http/controllers/auth-qr-code/routes";
 
 // if (env.NODE_ENV === "production") {
 //   Sentry.init({
@@ -92,6 +93,7 @@ app.register(MessageRoutes, { prefix: "messages" });
 app.register(GroupRoutes, { prefix: "group" });
 app.register(InviteRoutes, { prefix: "invite" });
 app.register(ContactsRoutes, { prefix: "contacts" });
+app.register(AuthQrCodeRoutes);
 
 app.setErrorHandler((error: any, _, reply) => {
   if (error instanceof ZodError) {
