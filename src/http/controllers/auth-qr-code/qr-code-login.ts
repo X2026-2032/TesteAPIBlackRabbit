@@ -8,7 +8,6 @@ export const QrCodeLogin = async (
 ) => {
   try {
     const { token, user } = request.body;
-    console.log(request.body);
 
     const qrToken = await prisma.qrToken.findUnique({
       where: { token },
@@ -21,7 +20,7 @@ export const QrCodeLogin = async (
     if (qrToken.status !== "PENDING") {
       return reply
         .status(400)
-        .send({ error: "Token já utilizado ou expirado" });
+        .send({ error: "QR code já utilizado ou expirado" });
     }
 
     if (qrToken.expiresAt < new Date()) {
@@ -30,14 +29,22 @@ export const QrCodeLogin = async (
         data: { status: "EXPIRED" },
       });
 
-      return reply.status(400).send({ error: "Token expirado" });
+      return reply.status(400).send({ error: "QR code expirado" });
+    }
+
+    const userExist = await prisma.graphicAccount.findUnique({
+      where: { id: user.id },
+    });
+
+    if (!userExist) {
+      throw new Error(`Usuário com ID ${user.id} não encontrado`);
     }
 
     const updatedToken = await prisma.qrToken.update({
       where: { token },
       data: {
         status: "COMPLETED",
-        userId: user.id,
+        userId: userExist.id,
       },
     });
 
