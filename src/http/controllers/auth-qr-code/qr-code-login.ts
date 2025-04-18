@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import { User } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 
 export const QrCodeLogin = async (
-  request: FastifyRequest<{ Body: { token: string } }>,
+  request: FastifyRequest<{ Body: { token: string; user: User } }>,
   reply: FastifyReply,
 ) => {
   try {
-    const { token } = request.body;
+    const { token, user } = request.body;
+    console.log(request.body);
 
     const qrToken = await prisma.qrToken.findUnique({
       where: { token },
@@ -27,10 +29,9 @@ export const QrCodeLogin = async (
         where: { token },
         data: { status: "EXPIRED" },
       });
+
       return reply.status(400).send({ error: "Token expirado" });
     }
-
-    const user = request.user;
 
     const updatedToken = await prisma.qrToken.update({
       where: { token },

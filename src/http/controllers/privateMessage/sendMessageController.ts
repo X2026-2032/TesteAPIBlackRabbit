@@ -34,11 +34,9 @@ export async function sendMessage(
 
     // Verificar se ambos têm chaves públicas configuradas
     if (!sender.publicKey || !receiver.publicKey) {
-      return reply
-        .status(400)
-        .send({
-          message: "Ambos os usuários devem ter chaves públicas configuradas.",
-        });
+      return reply.status(400).send({
+        message: "Ambos os usuários devem ter chaves públicas configuradas.",
+      });
     }
 
     // Criptografar o conteúdo da mensagem

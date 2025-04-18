@@ -32,7 +32,7 @@ export class AuthenticateUseCase {
         },
       });
 
-      let userCompleted = false;
+      const userCompleted = false;
 
       //////////////////////////////
       if (graphic && !userCompleted) {
