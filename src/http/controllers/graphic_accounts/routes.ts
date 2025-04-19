@@ -3,7 +3,10 @@ import { FastifyInstance } from "fastify";
 import { verifyJwt } from "@/http/middlewares/verify-jwt";
 
 import { createGraphicAccounts } from "./create-graphic-accounts";
-import { fetchAllGraphicAccounts, fetchGraphicAccounts } from "./fetch-graphic-accounts";
+import {
+  fetchAllGraphicAccounts,
+  fetchGraphicAccounts,
+} from "./fetch-graphic-accounts";
 import { changeUserPassword } from "./changePasswordAccountGraphic";
 import { changeUserPasswordEletronic } from "./changePasswordEletronicAccountGraphic";
 import { sendCodeEmail } from "./send-code-email";
@@ -20,32 +23,27 @@ export async function GraphicAccountsRoutes(app: FastifyInstance) {
   app.get("/", { onRequest: [verifyJwt] }, fetchAllGraphicAccounts);
 
   app.get("/userName/:userName", fetchGraphicAccounts);
-  
+
   app.patch("/:userName/update-publickey", updatePublicKey);
 
-  app.delete("/delete", {
-    schema: {
-      body: {
-        type: "object",
-        properties: {
-          userName: { type: "string" }
+  app.delete(
+    "/delete",
+    {
+      schema: {
+        body: {
+          type: "object",
+          properties: {
+            userName: { type: "string" },
+          },
+          required: ["userName"],
         },
-        required: ["userName"]
-      }
+      },
+      onRequest: [verifyJwt],
     },
-    onRequest: [verifyJwt]
-  }, deleteUserByUserName);
-
-
-
-
-  
-
+    deleteUserByUserName,
+  );
 
   app.post("/create", createGraphicAccounts);
- 
- 
- 
 
   // app.post(
   //   "/wallet-transfer",

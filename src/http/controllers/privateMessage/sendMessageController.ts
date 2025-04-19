@@ -12,13 +12,21 @@ interface MessagePayload {
 }
 
 // Este método agora precisa receber a instância do Socket.io
-export async function sendMessage(request: FastifyRequest, reply: FastifyReply) {
+export async function sendMessage(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
-    const { senderId, receiverId, content, type } = request.body as MessagePayload;
+    const { senderId, receiverId, content, type } =
+      request.body as MessagePayload;
 
     // Verificar se o remetente e o destinatário existem
-    const sender = await prisma.graphicAccount.findUnique({ where: { id: senderId } });
-    const receiver = await prisma.graphicAccount.findUnique({ where: { id: receiverId } });
+    const sender = await prisma.graphicAccount.findUnique({
+      where: { id: senderId },
+    });
+    const receiver = await prisma.graphicAccount.findUnique({
+      where: { id: receiverId },
+    });
 
     if (!sender || !receiver) {
       return reply.status(404).send({ message: "Usuário não encontrado" });
@@ -26,11 +34,16 @@ export async function sendMessage(request: FastifyRequest, reply: FastifyReply) 
 
     // Verificar se ambos têm chaves públicas configuradas
     if (!sender.publicKey || !receiver.publicKey) {
-      return reply.status(400).send({ message: "Ambos os usuários devem ter chaves públicas configuradas." });
+      return reply.status(400).send({
+        message: "Ambos os usuários devem ter chaves públicas configuradas.",
+      });
     }
 
     // Criptografar o conteúdo da mensagem
-    const encryptedContent = encryptMessage(content, receiver.publicKey as string);
+    const encryptedContent = encryptMessage(
+      content,
+      receiver.publicKey as string,
+    );
 
     // Salvar mensagem no banco de dados
     const message = await prisma.privateMessage.create({
@@ -43,20 +56,27 @@ export async function sendMessage(request: FastifyRequest, reply: FastifyReply) 
     });
 
     // Acessar a instância do socket.io
-    const io: Server = request.app.io;  // Acessando a instância do socket.io
-    const receiverSocket: Socket | undefined = io.sockets.sockets.get(receiverId); // Buscando o socket do destinatário
+    const io: Server = request.app.io; // Acessando a instância do socket.io
+    const receiverSocket: Socket | undefined =
+      io.sockets.sockets.get(receiverId); // Buscando o socket do destinatário
 
     // Verificar se o socket do destinatário está conectado
     if (receiverSocket) {
-      receiverSocket.emit("newMessage", { encryptedContent, senderId, receiverId, type });
+      receiverSocket.emit("newMessage", {
+        encryptedContent,
+        senderId,
+        receiverId,
+        type,
+      });
     } else {
       console.log("O destinatário não está conectado.");
     }
 
     return reply.status(201).send(message);
-
   } catch (error) {
     console.error("Erro ao enviar mensagem:", error);
-    return reply.status(500).send({ message: "Erro ao enviar mensagem", error: error });
+    return reply
+      .status(500)
+      .send({ message: "Erro ao enviar mensagem", error: error });
   }
 }

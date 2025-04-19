@@ -9,8 +9,10 @@ interface MessagePayload {
   content: string;
 }
 
-
-export async function getMessages(request: FastifyRequest, reply: FastifyReply) {
+export async function getMessages(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     const { senderId, receiverId } = request.body as MessagePayload;
 

@@ -15,7 +15,7 @@ const httpsAgent = new https.Agent({
 });
 
 const api = axios.create({
-//  baseURL: env.IDEZ_API_URL,
+  //  baseURL: env.IDEZ_API_URL,
   // httpsAgent,
 });
 

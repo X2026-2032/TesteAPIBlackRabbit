@@ -14,23 +14,16 @@ import { FindUserAdmin } from "./find-user";
 
 export async function BackofficeRoutes(app: FastifyInstance) {
   app.addHook("onRequest", verifyJwt);
-  app.addHook(
-    "onRequest",
-    verifyUserRole(["ADMIN", "MASTER", "ADMIN_BAG"]),
-  );
+  app.addHook("onRequest", verifyUserRole(["ADMIN", "MASTER", "ADMIN_BAG"]));
 
- 
- 
   app.get("/users", listUsers);
   app.get("/users/admin", listUsersAdmin);
   app.get("/user/:document", FindUserAdmin);
- 
- 
+
   app.post("/operators", createOperator);
   app.get("/operators", fetchOperators);
   app.delete("/operators/:id", deleteOperator);
   app.put("/operators/:id", updateOperator);
 
   app.get("/notifications", fetchNotifications);
-
 }

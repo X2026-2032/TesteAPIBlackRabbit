@@ -10,8 +10,8 @@ export async function createGraphicAccounts(
   try {
     // Log dos dados de requisição
     console.log("Request received at createGraphicAccounts:");
-    console.log("Request Headers:", request.headers);  // Cabeçalhos
-    console.log("Request Body:", request.body);  // Corpo da requisição
+    console.log("Request Headers:", request.headers); // Cabeçalhos
+    console.log("Request Body:", request.body); // Corpo da requisição
 
     // Validação do schema
     const schema = z.object({
@@ -83,7 +83,6 @@ export async function createGraphicAccounts(
 
     console.log("Account created successfully:", account);
     return reply.status(200).send(account);
-
   } catch (error: any) {
     // Log completo de erro
     console.error("Error during account creation:", error);
@@ -94,6 +93,8 @@ export async function createGraphicAccounts(
     }
 
     // Caso seja um erro não tratado ou desconhecido, retorna 500
-    return reply.status(500).send({ message: "An unexpected error occurred", error: error.message });
+    return reply
+      .status(500)
+      .send({ message: "An unexpected error occurred", error: error.message });
   }
 }

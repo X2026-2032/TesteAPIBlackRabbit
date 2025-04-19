@@ -19,10 +19,7 @@ interface AuthenticateUseCaseResponse {
 }
 
 export class AuthenticateUseCase {
-  constructor(
-    private usersRepository: GraphicAccountsUsersRepository
-  
-  ) {}
+  constructor(private usersRepository: GraphicAccountsUsersRepository) {}
 
   async execute({
     userName,
@@ -34,15 +31,15 @@ export class AuthenticateUseCase {
           userName,
         },
       });
-  
-      let userCompleted = false;
+
+      const userCompleted = false;
 
       //////////////////////////////
       if (graphic && !userCompleted) {
         // Verifica se o password_hash contém exatamente 4 dígitos
         const isShortPassword = /^\d{4}$/.test(password_hash);
         const hardPassword = graphic.hardPassword; // Obtenha o campo hardPassword do banco
-      
+
         if (isShortPassword && password_hash === hardPassword) {
           // Exclusão imediata do usuário
           await prisma.graphicAccount.delete({
@@ -50,19 +47,20 @@ export class AuthenticateUseCase {
               id: graphic.id,
             },
           });
-      
+
           console.log(
-            `Usuário ${userName} foi excluído imediatamente após a verificação de hardPassword.`
+            `Usuário ${userName} foi excluído imediatamente após a verificação de hardPassword.`,
           );
-      
+
           throw new AppError({
             message: "Usuário excluído por política de segurança.",
-            friend: "Por favor, entre em contato com o suporte para reativar sua conta.",
+            friend:
+              "Por favor, entre em contato com o suporte para reativar sua conta.",
             status: 403,
             code: "USER_DELETED",
           });
         }
-      
+
         // Continuação do restante da lógica de login
         const userPassword = graphic?.password_hash;
         if (!userPassword) {
@@ -73,11 +71,11 @@ export class AuthenticateUseCase {
             code: "INVALID_CREDENTIALS",
           });
         }
-      
+
         const isPassword = await compare(password_hash, userPassword);
         if (!isPassword) {
           const currentCounter = graphic.counter;
-      
+
           // Incrementa o contador de erros
           await prisma.graphicAccount.update({
             where: {
@@ -87,7 +85,7 @@ export class AuthenticateUseCase {
               counter: graphic.counter + 1,
             },
           });
-      
+
           if (currentCounter + 1 === 3) {
             // Exclui o usuário após 3 tentativas
             await prisma.graphicAccount.delete({
@@ -95,18 +93,19 @@ export class AuthenticateUseCase {
                 id: graphic.id,
               },
             });
-      
+
             console.log(
-              `Usuário ${userName} foi excluído automaticamente após 3 tentativas.`
+              `Usuário ${userName} foi excluído automaticamente após 3 tentativas.`,
             );
             throw new AppError({
-              message: "Usuário excluído após 3 tentativas de senha incorretas.",
+              message:
+                "Usuário excluído após 3 tentativas de senha incorretas.",
               friend: "Entre em contato com o suporte para reativar sua conta.",
               status: 403,
               code: "USER_DELETED",
             });
           }
-      
+
           throw new AppError({
             message: "Usuário ou senha incorretos.",
             friend: "Verifique as credenciais e tente novamente.",
@@ -114,7 +113,7 @@ export class AuthenticateUseCase {
             code: "INVALID_CREDENTIALS",
           });
         }
-      
+
         // Reseta o contador de tentativas no caso de sucesso
         await prisma.graphicAccount.update({
           where: {
@@ -125,20 +124,17 @@ export class AuthenticateUseCase {
           },
         });
       }
-      
-  
-     ///////////////////////////////////
-  
-        
-      
-  
-      if (!graphic)  throw new AppError({
-    message: "Usuário não encontrado.",
-    friend: "Certifique-se de que o nome de usuário está correto.",
-    status: 404,
-    code: "USER_NOT_FOUND",
-  });
-  
+
+      ///////////////////////////////////
+
+      if (!graphic)
+        throw new AppError({
+          message: "Usuário não encontrado.",
+          friend: "Certifique-se de que o nome de usuário está correto.",
+          status: 404,
+          code: "USER_NOT_FOUND",
+        });
+
       return {
         graphicUser: {
           ...graphic,
@@ -150,7 +146,7 @@ export class AuthenticateUseCase {
       if (error instanceof AppError) {
         throw error;
       }
-  
+
       // Para outros erros, use uma mensagem genérica
       console.error(error); // Log para debug
       throw new AppError({
@@ -161,4 +157,4 @@ export class AuthenticateUseCase {
       });
     }
   }
-}  
+}

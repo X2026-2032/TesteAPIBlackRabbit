@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma"; // Prisma ORM
 import { z } from "zod"; // Validação de esquema
 import { updatePublicKeyService } from "@/use-cases/graphic_accounts/updatePublicKeyService";
 
-export async function updatePublicKey(request: FastifyRequest, reply: FastifyReply) {
+export async function updatePublicKey(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     // Validação do corpo da requisição
     const schema = z.object({
@@ -35,6 +38,8 @@ export async function updatePublicKey(request: FastifyRequest, reply: FastifyRep
       });
     }
 
-    return reply.status(500).send({ message: "Erro ao atualizar a chave pública." });
+    return reply
+      .status(500)
+      .send({ message: "Erro ao atualizar a chave pública." });
   }
 }

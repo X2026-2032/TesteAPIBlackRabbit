@@ -13,7 +13,7 @@ export async function profile(request: FastifyRequest, reply: FastifyReply) {
     const token = await reply.jwtSign(
       {
         role: user.role,
-     //   type: user.type,
+        //   type: user.type,
       },
       {
         sign: {
@@ -26,8 +26,8 @@ export async function profile(request: FastifyRequest, reply: FastifyReply) {
       user: {
         ...user,
         access_token: token,
-      },  
-      };
+      },
+    };
     return reply.status(200).send(data);
   } catch (error: any) {
     throw new AppError(error);

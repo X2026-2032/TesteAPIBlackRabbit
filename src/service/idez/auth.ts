@@ -248,80 +248,77 @@ export class IdezAuthService {
     const passwordIsValid =
       data.withoutPass || compareSync(data.password, user.password as string);
 
-    
-    
-
     if (!user || !passwordIsValid) {
-    //   if (user) {
-    //     if (account) {
-    //       // Recupera o contador atual antes de incrementar
-    //       const currentCounter = account.counter;
+      //   if (user) {
+      //     if (account) {
+      //       // Recupera o contador atual antes de incrementar
+      //       const currentCounter = account.counter;
 
-    //       // Incrementa o contador de erros apenas para contas gráficas
-    //       await prisma.account.update({
-    //         where: {
-    //           id: account.id,
-    //         },
-    //         data: {
-    //           counter: account.counter + 1,
-    //         },
-    //       });
+      //       // Incrementa o contador de erros apenas para contas gráficas
+      //       await prisma.account.update({
+      //         where: {
+      //           id: account.id,
+      //         },
+      //         data: {
+      //           counter: account.counter + 1,
+      //         },
+      //       });
 
-    //       // Exibe o valor atual do contador no console
-    //       console.log(
-    //         `Erro de autenticação! Contador atual: ${currentCounter}`,
-    //       );
+      //       // Exibe o valor atual do contador no console
+      //       console.log(
+      //         `Erro de autenticação! Contador atual: ${currentCounter}`,
+      //       );
 
-    //       // Se o contador atingir 3, atualiza o campo 'blocked' para true
-    //       if (currentCounter + 1 >= 3) {
-    //         await prisma.account.update({
-    //           where: {
-    //             id: account.id,
-    //           },
-    //           data: {
-    //             blocked: true,
-    //           },
-    //         });
-    //       }
-    //       // if (account.blocked) {
-    //       //   // Se a conta estiver bloqueada, notifica o usuário e impede a continuação do processo
-    //       //   throw new Error("Usuário impedido de fazer login. Conta bloqueada.");
-    //       // }
+      //       // Se o contador atingir 3, atualiza o campo 'blocked' para true
+      //       if (currentCounter + 1 >= 3) {
+      //         await prisma.account.update({
+      //           where: {
+      //             id: account.id,
+      //           },
+      //           data: {
+      //             blocked: true,
+      //           },
+      //         });
+      //       }
+      //       // if (account.blocked) {
+      //       //   // Se a conta estiver bloqueada, notifica o usuário e impede a continuação do processo
+      //       //   throw new Error("Usuário impedido de fazer login. Conta bloqueada.");
+      //       // }
 
-    //       if (account.status == "under_review") {
-    //         // Se a conta estiver bloqueada, notifica o usuário e impede a continuação do processo
-    //         throw new AppError({ message: "Conta em análise", status: 401 });
-    //       }
-    //     }
-    //   }
-    //   throw new AppError({ message: "Usuário ou senha incorretos" });
-    // } else {
-    //   // Limpa o contador de erros se a autenticação for bem-sucedida
-    //   if (account) {
-    //     await prisma.account.update({
-    //       where: {
-    //         id: account.id,
-    //       },
-    //       data: {
-    //         counter: 0,
-    //       },
-    //     });
+      //       if (account.status == "under_review") {
+      //         // Se a conta estiver bloqueada, notifica o usuário e impede a continuação do processo
+      //         throw new AppError({ message: "Conta em análise", status: 401 });
+      //       }
+      //     }
+      //   }
+      //   throw new AppError({ message: "Usuário ou senha incorretos" });
+      // } else {
+      //   // Limpa o contador de erros se a autenticação for bem-sucedida
+      //   if (account) {
+      //     await prisma.account.update({
+      //       where: {
+      //         id: account.id,
+      //       },
+      //       data: {
+      //         counter: 0,
+      //       },
+      //     });
 
-    //     // Se o contador estava em 3 e agora foi zerado, atualiza o campo 'blocked' para false
-    //     if (account.counter >= 3) {
-    //       await prisma.account.update({
-    //         where: {
-    //           id: account.id,
-    //         },
-    //         data: {
-    //           blocked: false,
-    //         },
-    //       });
-    //     }
-    //   }
-    // }
+      //     // Se o contador estava em 3 e agora foi zerado, atualiza o campo 'blocked' para false
+      //     if (account.counter >= 3) {
+      //       await prisma.account.update({
+      //         where: {
+      //           id: account.id,
+      //         },
+      //         data: {
+      //           blocked: false,
+      //         },
+      //       });
+      //     }
+      //   }
+      // }
 
-    return data;
+      return data;
+    }
   }
-}
 }

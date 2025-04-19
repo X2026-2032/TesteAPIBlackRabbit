@@ -3,9 +3,7 @@ import { GetUserProfileUseCase } from "../get-user-profile";
 
 export function makeGetUserProfileUseCase() {
   const usersRepository = new PrismaGraphicAccountUsersRepository();
-  const factory = new GetUserProfileUseCase(
-    usersRepository as any,
-  );
+  const factory = new GetUserProfileUseCase(usersRepository as any);
 
   return factory;
 }
