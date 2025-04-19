@@ -1,11 +1,16 @@
 import { FastifyInstance } from "fastify";
-import { listContacts } from "./contactsController";
+import { listContacts, removeContact } from "./contactsController";
 
 export async function ContactsRoutes(app: FastifyInstance) {
   // Rota para listar contatos de um usuário
   app.get("/:userId", async (request, reply) => {
     await listContacts(request as any, reply);
   });
+  
+  app.delete("/:id", async (request, reply) => {
+    await removeContact(request as any, reply);
+  });
+
 }
 
 // // Rota para salvar a chave pública do usuário
