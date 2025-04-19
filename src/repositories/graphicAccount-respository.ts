@@ -13,13 +13,15 @@ export type GraphicAccountUser =
         access_token: string;
         blocked: boolean;
         counter: number;
-        role: "MEMBER" | "ADMIN" | "USER" | "GRAPHIC" | "WALLET";        
+        role: "MEMBER" | "ADMIN" | "USER" | "GRAPHIC" | "WALLET";
       }[];
     })
   | null;
 
 export interface GraphicAccountsUsersRepository {
-  create(data: Prisma.GraphicAccountUncheckedCreateInput): Promise<GraphicAccount>;
+  create(
+    data: Prisma.GraphicAccountUncheckedCreateInput,
+  ): Promise<GraphicAccount>;
   save(data: GraphicAccount): Promise<GraphicAccount>;
   findByUserName(userName: string): Promise<GraphicAccount | null>;
   findById(id: string): Promise<GraphicAccount | null>;

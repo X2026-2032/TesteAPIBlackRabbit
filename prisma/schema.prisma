@@ -25,6 +25,7 @@ model User {
   api_key      String?
   AuthToken    AuthToken[]
   Pictures     Pictures[]
+  QrToken      QrToken[]
 
   @@map("users")
 }
@@ -68,6 +69,7 @@ model GraphicAccount {
 
   // Relacionamento com a nova entidade
   userMetadata UserMetadata?
+  QrToken      QrToken[]
 
   @@map("graphic_accounts")
 }
@@ -384,6 +386,27 @@ model Invite {
   type     String?        @default("USER")
 
   @@map("invites")
+}
+
+model QrToken {
+  id               String          @id @default(uuid())
+  token            String          @unique
+  status           QrTokenStatus   @default(PENDING)
+  expiresAt        DateTime
+  createdAt        DateTime        @default(now())
+  graphicAccountId String?
+  GraphicAccount   GraphicAccount? @relation(fields: [graphicAccountId], references: [id])
+  User             User?           @relation(fields: [userId], references: [id])
+  userId           String?
+}
+
+enum QrTokenStatus {
+  PENDING
+  USED
+  EXPIRED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
 
 enum CallStatus {

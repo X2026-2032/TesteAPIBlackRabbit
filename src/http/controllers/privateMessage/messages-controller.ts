@@ -14,14 +14,15 @@ interface MessagePayload {
 export async function sendMessage(
   request: FastifyRequest,
   reply: FastifyReply,
-  io: Server
+  io: Server,
 ) {
   try {
-    const { senderId, receiverId, content, type } = request.body as MessagePayload;
+    const { senderId, receiverId, content, type } =
+      request.body as MessagePayload;
 
     // Salva mensagem no banco de dados
     const message = await prisma.privateMessage.create({
-      data: { senderId, receiverId, content, type, },
+      data: { senderId, receiverId, content, type },
     });
 
     // Emite mensagem para o destinatário via WebSocket
@@ -34,7 +35,10 @@ export async function sendMessage(
 }
 
 // Função para buscar mensagens de um chat
-export async function getMessages(request: FastifyRequest, reply: FastifyReply) {
+export async function getMessages(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
   try {
     const { receiverId } = request.params as { receiverId: string };
     const { senderId } = request.query as { senderId: string };
@@ -53,7 +57,7 @@ export async function getMessages(request: FastifyRequest, reply: FastifyReply) 
 // Função para salvar chave pública
 export async function savePublicKey(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { id } = request.params as { id: string };
@@ -73,7 +77,7 @@ export async function savePublicKey(
 // Função para buscar chave pública
 export async function getPublicKey(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { id } = request.params as { id: string };

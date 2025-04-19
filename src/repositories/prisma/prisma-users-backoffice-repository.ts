@@ -3,13 +3,11 @@ import { Prisma, User } from "@prisma/client";
 import { UsersRepository } from "../users-backoffice-respository";
 
 export class PrismaUsersRepository implements UsersRepository {
-  
-
   async findById(id: string): Promise<User | null> {
     return prisma.user.findUnique({
       where: {
         id,
-      }
+      },
     });
   }
 

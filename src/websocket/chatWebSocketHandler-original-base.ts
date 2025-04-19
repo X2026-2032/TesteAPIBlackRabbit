@@ -10,7 +10,7 @@
 //   encryptedKey?: string;
 //   iv?: string;
 //   type?: string;
-//   timestamp?: number | string | Date; 
+//   timestamp?: number | string | Date;
 //   status?: string;
 //   authorName?: string;
 //   action?: string;
@@ -18,8 +18,6 @@
 //   authorId?: string;
 //   isOwn?: boolean | string;
 // }
-
-
 
 // interface Contact {
 //   userId: string;
@@ -35,17 +33,15 @@
 //   const invites: { senderId: string; receiverId: string; status: string }[] = [];
 //   const messageQueues: { [userId: string]: Message[] } = {}; // Fila de mensagens para usuários offline
 
-
-
 //   io.on("connection", (socket) => {
 //     console.log(`Usuário conectado: ${socket.id}`);
-  
+
 //       // Usuário conectou
 //       socket.on("user_connected", async (userId) => {
 //         try {
 //           console.log(`Usuário ${userId} está agora online.`);
 //           socket.join(userId); // Adiciona ao "quarto" do usuário
-      
+
 //           // Envia mensagens pendentes, se houver
 //           if (messageQueues[userId] && messageQueues[userId].length > 0) {
 //             console.log(`Enviando mensagens pendentes para o usuário ${userId}.`);
@@ -58,7 +54,7 @@
 //           handleError(socket, error as Error, "user_connected");
 //         }
 //       });
-      
+
 //       // Usuário desconectou
 //       socket.on("disconnect", async () => {
 //         try {
@@ -68,7 +64,6 @@
 //           console.error("Erro ao remover usuário do Redis:", error);
 //         }
 //       });
-      
 
 //     //   // Enviar mensagens privadas
 //     //   socket.on("send_message", (data) => {
@@ -88,12 +83,12 @@
 //     //       isOwn,
 //     //       status
 //     //       } = data;
-  
+
 //     //     if (!content || !senderId || !receiverId) {
 //     //       console.error("Dados incompletos para criar a mensagem");
 //     //       return;
 //     //     }
-  
+
 //     //     const message: Message = {
 //     //       id,
 //     //       authorId,
@@ -111,10 +106,10 @@
 //     //       isOwn,
 //     //       status,
 //     //     };
-  
+
 //     //     console.log(`Mensagem recebida de ${senderId} para ${receiverId}:`, message);
 //     //     console.log("Mensagem criada:", data)
-  
+
 //     //     // Verificar se o destinatário está online
 //     //     const recipientSocket = io.sockets.adapter.rooms.get(receiverId);
 //     //     if (recipientSocket && recipientSocket.size > 0) {
@@ -356,7 +351,6 @@
 //   }
 // });
 
-
 //     // Ouvindo notificações no front-end
 // socket.on('new:notification', (notification) => {
 //   console.log('Nova notificação:', notification);
@@ -368,7 +362,6 @@
 //     const { userId, notification } = data;
 //     io.to(userId).emit('new:notification', notification);
 //   });
-
 
 //     // Desconexão
 //     socket.on("disconnect", () => {

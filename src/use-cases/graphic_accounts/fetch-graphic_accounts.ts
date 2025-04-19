@@ -113,7 +113,6 @@ export async function changePasswordEletronic(
       data: {
         userName: {
           set: hashedPassword,
-          
         },
       },
     });

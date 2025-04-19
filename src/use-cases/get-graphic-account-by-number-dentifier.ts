@@ -6,12 +6,13 @@ interface GetGraphicAccountByNumberIdentifierUseCaseRequest {
 }
 
 export class GetGraphicAccountByNumberIdentifierUseCase {
-  
-  async execute({ number_identifier }: GetGraphicAccountByNumberIdentifierUseCaseRequest) {
+  async execute({
+    number_identifier,
+  }: GetGraphicAccountByNumberIdentifierUseCaseRequest) {
     const user = await prisma.graphicAccount.findFirst({
       where: {
-        number_identifier
-      }
+        number_identifier,
+      },
     });
 
     if (!user) {
@@ -28,7 +29,7 @@ export class GetGraphicAccountByNumberIdentifierUseCase {
       document: user.document,
       balance: user.balance,
       role: user.role,
-      number_identifier: user.number_identifier
+      number_identifier: user.number_identifier,
     };
 
     return { user: raw };

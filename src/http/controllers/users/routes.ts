@@ -64,7 +64,6 @@ export async function UsersRoutes(app: FastifyInstance) {
   // Authenticated
   app.get("/me", { onRequest: [verifyJwt] }, profile);
 
-
   app.patch(
     "/update-config-key-pix/:userId",
     { onRequest: [verifyJwt] },

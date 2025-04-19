@@ -15,12 +15,10 @@ export async function authenticateToken(
       },
       include: {
         GraphicAccount: {
-          include: {
-          },
+          include: {},
         },
         User: {
-          include: {
-          },
+          include: {},
         },
       },
     });
@@ -62,8 +60,6 @@ export async function authenticateToken(
     //   },
     // });
 
-    
-
     const data = {
       user: {
         ...user,
@@ -80,4 +76,3 @@ export async function authenticateToken(
     throw new AppError(error as unknown as IRequest);
   }
 }
-

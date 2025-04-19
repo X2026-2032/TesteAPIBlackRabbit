@@ -3,11 +3,11 @@ import { hash } from "bcryptjs";
 import { GraphicAccountsUsersRepository } from "@/repositories/graphicAccount-respository";
 
 interface CreateGrapicAccountUseCaseRequest {
-  name?: string ;
-  userName?: string ;
-  hardPassword?: string ;
-  password_hash?: string ;
-  status?: string ;
+  name?: string;
+  userName?: string;
+  hardPassword?: string;
+  password_hash?: string;
+  status?: string;
   created_at: Date;
   access_token?: string;
   blocked: boolean;

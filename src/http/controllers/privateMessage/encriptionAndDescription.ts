@@ -8,9 +8,11 @@ export function encryptMessage(content: string, publicKey: string): string {
 }
 
 // Descriptografa uma mensagem
-export function decryptMessage(encryptedContent: string, privateKey: string): string {
+export function decryptMessage(
+  encryptedContent: string,
+  privateKey: string,
+): string {
   const buffer = Buffer.from(encryptedContent, "base64");
   const decrypted = crypto.privateDecrypt(privateKey, buffer);
   return decrypted.toString("utf-8");
 }
-

@@ -8,7 +8,7 @@ interface DeleteUserRequest {
 
 export async function deleteUserByUserName(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { userName } = request.body as DeleteUserRequest; // Garantindo que o body seja do tipo DeleteUserRequest
 
@@ -43,7 +43,9 @@ export async function deleteUserByUserName(
 
     // Verificando se o erro tem um código de SQL
     if (error) {
-      return reply.status(500).send({ error: `Erro do banco de dados: ${error}` });
+      return reply
+        .status(500)
+        .send({ error: `Erro do banco de dados: ${error}` });
     }
 
     return reply.status(400).send({
