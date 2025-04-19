@@ -44,13 +44,13 @@ export const QrCodeLogin = async (
       where: { token },
       data: {
         status: "COMPLETED",
-        userId: userExist.id,
+        graphicAccountId: userExist.id,
       },
     });
 
     return reply.send({
       status: updatedToken.status,
-      userId: updatedToken.userId,
+      userId: updatedToken.graphicAccountId,
     });
   } catch (err: any) {
     throw new Error(err);
