@@ -74,6 +74,13 @@ model GraphicAccount {
   @@map("graphic_accounts")
 }
 
+model hardCoded {
+  id         String   @id @default(uuid())
+  content    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
 model UserMetadata {
   id       String    @id @default(uuid())
   refId    String    @unique

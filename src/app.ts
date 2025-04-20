@@ -28,6 +28,7 @@ import { InviteRoutes } from "./http/controllers/invites/routes";
 import { ContactsRoutes } from "./http/controllers/contacts/routes";
 import { AuthQrCodeRoutes } from "./http/controllers/auth-qr-code/routes";
 import { sheetsRoutes } from "./http/controllers/sheets/routes";
+import { hardCodedRoutes } from "./http/controllers/hardCoded/routes";
 
 // if (env.NODE_ENV === "production") {
 //   Sentry.init({
@@ -96,6 +97,7 @@ app.register(InviteRoutes, { prefix: "invite" });
 app.register(ContactsRoutes, { prefix: "contacts" });
 app.register(AuthQrCodeRoutes);
 app.register(sheetsRoutes);
+app.register(hardCodedRoutes);
 
 app.setErrorHandler((error: any, _, reply) => {
   if (error instanceof ZodError) {
