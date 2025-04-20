@@ -28,10 +28,11 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
     // Verifica se o convite já existe
     const existingInvite = await prisma.invite.findFirst({
       where: {
-        OR: [
-          { senderId, receiverId },
-          { senderId: receiverId, receiverId: senderId },
-        ],
+        senderId,
+        receiverId,
+        status: {
+          not: "REMOVED",
+        },
       },
     });
 

@@ -426,4 +426,5 @@ enum InviteStatus {
   PENDING
   ACCEPTED
   REJECTED
+  REMOVED
 }
