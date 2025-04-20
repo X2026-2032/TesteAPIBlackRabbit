@@ -238,13 +238,11 @@ enum TicketStatus {
   CLOSE
 }
 
-////////////////// aqui a relacao de usuarios e grupos //////////////
-
 model Group {
   id              String         @id @default(uuid())
   name            String
   description     String?
-  ownerId         String // Relacionamento com GraphicAccount
+  ownerId         String
   ownerUserName   String?
   created_at      DateTime       @default(now())
   updated_at      DateTime       @updatedAt
@@ -301,7 +299,6 @@ model PrivateMessage {
   @@map("private_messages")
 }
 
-///////////////////
 model GroupMessage {
   type      String // Texto, Imagem, Vídeo, Áudio
   mediaUrl  String?
