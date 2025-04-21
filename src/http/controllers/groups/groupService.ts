@@ -79,7 +79,7 @@ export async function removeUserFromGroup(groupId: string, username: string) {
     },
   });
 
-  if (!groupMember)
+  if (groupMember == null)
     throw new Error("Vinculo entre usuário e grupo não encontrado");
 
   return prisma.groupMember.delete({
