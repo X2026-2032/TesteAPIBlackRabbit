@@ -47,6 +47,14 @@ export async function deleteGroupByName(
       );
     }
 
+    await prisma.groupMember.deleteMany({
+      where: { groupId: group.id },
+    });
+
+    await prisma.groupMessage.deleteMany({
+      where: { groupId: group.id },
+    });
+
     // Excluindo o grupo
     await prisma.group.delete({
       where: { id: group.id },

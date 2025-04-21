@@ -69,12 +69,22 @@ export async function removeUserFromGroup(groupId: string, username: string) {
   const user = await prisma.graphicAccount.findUnique({
     where: { userName: username },
   });
+
   if (!user) throw new Error("User not found");
 
-  return prisma.groupMember.deleteMany({
+  const groupMember = await prisma.groupMember.findFirst({
     where: {
       groupId,
       graphicAccountId: user.id,
+    },
+  });
+
+  if (!groupMember)
+    throw new Error("Vinculo entre usuário e grupo não encontrado");
+
+  return prisma.groupMember.delete({
+    where: {
+      id: groupMember.id,
     },
   });
 }
