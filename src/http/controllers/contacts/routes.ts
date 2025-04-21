@@ -6,11 +6,10 @@ export async function ContactsRoutes(app: FastifyInstance) {
   app.get("/:userId", async (request, reply) => {
     await listContacts(request as any, reply);
   });
-  
+
   app.delete("/:id", async (request, reply) => {
     await removeContact(request as any, reply);
   });
-
 }
 
 // // Rota para salvar a chave pública do usuário
