@@ -28,10 +28,11 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
     // Verifica se o convite já existe
     const existingInvite = await prisma.invite.findFirst({
       where: {
-        OR: [
-          { senderId, receiverId },
-          { senderId: receiverId, receiverId: senderId },
-        ],
+        senderId,
+        receiverId,
+        status: {
+          not: "REMOVED",
+        },
       },
     });
 
@@ -132,6 +133,11 @@ export const acceptInvite = async (
         .status(404)
         .send({ error: "Chave pública do remetente não encontrada" });
     }
+
+    io.to(senderId).emit("invite_accepted", {
+      userId: senderId,
+      userName: sender.userName,
+    });
 
     // Retorna a resposta com o convite atualizado e a chave pública
     return reply.status(200).send({

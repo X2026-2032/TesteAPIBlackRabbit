@@ -60,6 +60,26 @@ export const removeContact = async (
       return reply.status(404).send({ error: "Contato não encontrado" });
     }
 
+    const invites = await prisma.invite.findMany({
+      where: {
+        receiverId: contact.contactId,
+        senderId: contact.graphicAccountId,
+      },
+    });
+
+    if (!invites) {
+      return reply.status(404).send({ error: "Convite não encontrado" });
+    }
+
+    await prisma.invite.updateMany({
+      where: {
+        id: {
+          in: invites.map((invite) => invite.id),
+        },
+      },
+      data: { status: "REMOVED" },
+    });
+
     await prisma.contact.delete({
       where: { id },
     });
