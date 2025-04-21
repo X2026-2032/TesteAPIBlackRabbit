@@ -1,5 +1,6 @@
 import { io } from "@/app";
 import { prisma } from "@/lib/prisma";
+import { send } from "node:process";
 
 // Criar Grupo
 export async function createGroup(
@@ -206,7 +207,7 @@ export async function acceptInvite(groupId: string, username: string) {
   if (!invite) throw new Error("No pending invite found");
 
   // Atualiza o status do convite para aceito
-  await prisma.groupMember.update({
+  const inviteUpdated = await prisma.groupMember.update({
     where: { id: invite.id },
     data: { inviteStatus: "ACCEPTED" },
   });
@@ -235,6 +236,7 @@ export async function acceptInvite(groupId: string, username: string) {
   return {
     message: "Convite aceito com sucesso",
     publicKey: group?.publicKey, // Chave pública do dono do grupo
+    invite: inviteUpdated,
   };
 }
 
@@ -329,6 +331,7 @@ export async function listGroupInvitesService(graphicAccountId: string) {
       groupId: invite.groupId,
       groupName: invite.group.name,
       sender: invite.group.ownerUserName || null,
+      senderId: invite.group.ownerId,
       receiverId: invite.graphicAccountId,
       status: invite.inviteStatus,
       created_at: invite.created_at,
