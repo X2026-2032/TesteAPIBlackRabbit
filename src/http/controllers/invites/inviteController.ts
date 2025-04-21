@@ -134,6 +134,11 @@ export const acceptInvite = async (
         .send({ error: "Chave pública do remetente não encontrada" });
     }
 
+    io.to(senderId).emit("invite_accepted", {
+      userId: senderId,
+      userName: sender.userName,
+    });
+
     // Retorna a resposta com o convite atualizado e a chave pública
     return reply.status(200).send({
       message: "Convite aceito e contatos adicionados",
