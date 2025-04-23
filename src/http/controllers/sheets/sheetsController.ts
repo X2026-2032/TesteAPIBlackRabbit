@@ -20,6 +20,30 @@ export const createSheet = async (req: FastifyRequest, reply: FastifyReply) => {
   return reply.status(201).send(newSheet);
 };
 
+export const duplicateSheet = async (
+  req: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const id = Number((req.params as any).id);
+  const data = readData();
+  const originalSheet = data.find((sheet) => sheet.id === id);
+
+  if (!originalSheet) {
+    return reply.status(404).send({ error: "Sheet não encontrado" });
+  }
+
+  // Cria uma cópia profunda
+  const duplicatedSheet = {
+    id: Date.now(), // Novo ID
+    title: `${originalSheet.title} (Cópia)`,
+    rows: JSON.parse(JSON.stringify(originalSheet.rows)),
+  };
+
+  data.push(duplicatedSheet);
+  writeData(data);
+  return reply.status(201).send(duplicatedSheet);
+};
+
 export const updateSheet = async (req: FastifyRequest, reply: FastifyReply) => {
   const id = Number((req.params as any).id);
   const { title, rows } = req.body as any;
