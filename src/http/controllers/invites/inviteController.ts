@@ -24,7 +24,8 @@ export const sendInvite = async (req: FastifyRequest, reply: FastifyReply) => {
     if (!sender || !receiver) {
       return reply.status(404).send({ error: "Usuário não encontrado" });
     }
-
+    console.log(sender)
+    console.log(receiver)
     // Verifica se o convite já existe
     const existingInvite = await prisma.invite.findFirst({
       where: {
